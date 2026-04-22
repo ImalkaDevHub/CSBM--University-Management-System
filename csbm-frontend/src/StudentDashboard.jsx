@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import CourseCatalog from './CourseCatalog';
 import WorkshopList from './WorkshopList';
 import ApplicationForm from './ApplicationForm';
+import Logo from './components/Logo';
 
 const calculateDaysUntil = (dateString) => {
   if (!dateString) return 0;
@@ -725,9 +726,8 @@ const StudentDashboard = () => {
       
       {/* SIDEBAR */}
       <aside className="fixed left-0 top-0 h-screen w-72 bg-white shadow-sm border-r border-slate-100 flex flex-col z-40 hidden lg:flex font-body text-sm">
-        <div className="p-8 flex items-center gap-3">
-          <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBpLsLK2RrVg0HygqAJShfasdM7y8U7lKRFBiLsVSIuh1S3KuMQFlcH4RnnyIAI4R0Q64SJ32WS74canoe8M7gtPQuLExWhbIFfX0_rgzNLdFNN8v-i6Qabn3PlwYDOHL__3imQMmJ3Oh8ZUNUBKcmnBN56yWVRMcIPEVT1Ntu-2mBef1GZyLCAPmy1epjCe_5o_bk3W6twoTn1-RxY4b1mm3S-x4RHRCBiXpVggLpOPopXa9cVlxQegRQyIkT2Lh4eAFMJEN09Dqo" alt="CSBM Logo" className="w-10 h-10 object-contain" />
-          <span className="text-2xl font-black text-blue-800 font-headline leading-none">CSBM <br/>Campus</span>
+        <div className="p-8 flex justify-center">
+          <Logo className="h-12" theme="light" />
         </div>
         <nav className="flex-1 px-4 space-y-1 overflow-y-auto w-full">
           <NavItem panel="dashboard" icon="dashboard" label="Dashboard" />
