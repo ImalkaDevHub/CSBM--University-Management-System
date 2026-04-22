@@ -38,6 +38,12 @@ import AnalyticsDashboard from './AnalyticsDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import { Navigate } from 'react-router-dom';
 
+// PAYMENT UI ROUTES
+import PaymentSummary from './pages/payment/PaymentSummary';
+import PaymentProcessing from './pages/payment/PaymentProcessing';
+import PaymentSuccess from './pages/payment/PaymentSuccess';
+import PaymentFailed from './pages/payment/PaymentFailed';
+
 const { Header, Content, Sider } = Layout;
 
 // Define menu items outside the component for clarity and reusability
@@ -238,6 +244,12 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+          {/* PAYMENT FUNNEL ROUTES */}
+          <Route path="/payment/summary" element={<PaymentSummary />} />
+          <Route path="/payment/processing" element={<PaymentProcessing />} />
+          <Route path="/payment/success" element={<PaymentSuccess />} />
+          <Route path="/payment/failed" element={<PaymentFailed />} />
 
           {/* /admissions alias */}
           <Route path="/admissions" element={<ApplicationForm />} />

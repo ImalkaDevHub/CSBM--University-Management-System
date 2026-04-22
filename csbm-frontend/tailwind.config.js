@@ -8,54 +8,62 @@ export default {
     theme: {
         extend: {
             colors: {
-                // Primary Palette: Professional Blue
-                primary: {
-                    DEFAULT: '#3B82F6', // Blue 500
-                    50: '#EFF6FF',
-                    100: '#DBEAFE',
-                    200: '#BFDBFE',
-                    300: '#93C5FD',
-                    400: '#60A5FA',
-                    500: '#3B82F6',
-                    600: '#2563EB',
-                    700: '#1D4ED8',
-                    800: '#1E40AF',
-                    900: '#1E3A8A',
-                    950: '#172554',
-                },
-                // Secondary Palette: Creative Violet
-                secondary: {
-                    DEFAULT: '#8B5CF6', // Violet 500
-                    50: '#F5F3FF',
-                    100: '#EDE9FE',
-                    200: '#DDD6FE',
-                    300: '#C4B5FD',
-                    400: '#A78BFA',
-                    500: '#8B5CF6',
-                    600: '#7C3AED',
-                    700: '#6D28D9',
-                    800: '#5B21B6',
-                    900: '#4C1D95',
-                    950: '#2E1065',
-                },
-                // Accent Colors
-                accent: {
-                    teal: '#14B8A6',   // Teal 500
-                    rose: '#F43F5E',   // Rose 500
-                    amber: '#F59E0B',  // Amber 500
-                },
-                // Dark Mode Background Hierarchy
-                dark: {
-                    bg: '#0F172A',      // Slate 900 (Main Background)
-                    surface: '#1E293B', // Slate 800 (Card/Sidebar)
-                    border: '#334155',  // Slate 700 (Borders)
-                    hover: '#334155',   // Slate 700 (Hover State)
-                }
+                "primary": "#004ac6",
+                "primary-container": "#2563eb",
+                "secondary": "#6b38d4",
+                "secondary-container": "#8455ef",
+                "tertiary": "#005e6e",
+                "surface": "#faf8ff",
+                "surface-container": "#eaedff",
+                "surface-container-low": "#f2f3ff",
+                "surface-container-high": "#e2e7ff",
+                "surface-container-highest": "#dae2fd",
+                "surface-container-lowest": "#ffffff",
+                "on-surface": "#131b2e",
+                "on-surface-variant": "#434655",
+                "on-primary": "#ffffff",
+                "on-secondary": "#ffffff",
+                "outline": "#737686",
+                "outline-variant": "#c3c6d7",
+                "error": "#ba1a1a",
+                "error-container": "#ffdad6",
+                "inverse-surface": "#283044",
+                "primary-fixed": "#dbe1ff",
+                "primary-fixed-dim": "#b4c5ff",
+                "on-primary-fixed": "#00174b",
+                "on-primary-fixed-variant": "#003ea8",
+                "secondary-fixed": "#e9ddff",
+                "tertiary-fixed": "#acedff",
+                "on-tertiary-fixed": "#001f26",
+                "tertiary-container": "#00788c",
+                "on-tertiary-container": "#d7f6ff",
+                "inverse-on-surface": "#eef0ff",
+                "surface-tint": "#0053db",
+                "surface-dim": "#d2d9f4",
+                "surface-bright": "#faf8ff",
+                "on-secondary-fixed": "#23005c",
+                "on-secondary-fixed-variant": "#5516be",
+                "on-secondary-container": "#fffbff",
+                "on-primary-container": "#eeefff",
+                "inverse-primary": "#b4c5ff",
+                "surface-variant": "#dae2fd",
+                "on-background": "#131b2e",
+                "background": "#faf8ff",
             },
             fontFamily: {
+                "headline": ["Manrope"],
+                "body": ["Inter"],
+                "label": ["Inter"],
+                // Leaving originals just in case
                 poppins: ['Poppins', 'sans-serif'],
                 inter: ['Inter', 'sans-serif'],
                 display: ['Lexend', 'sans-serif'],
+            },
+            borderRadius: {
+                "DEFAULT": "1rem",
+                "lg": "2rem", 
+                "xl": "3rem",
+                "full": "9999px"
             },
             backgroundImage: {
                 'gradient-primary': 'linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%)',

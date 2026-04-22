@@ -219,3 +219,24 @@ body:not(.admin-dashboard) .ant-form-item-label>label {
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 1.5rem;
 }
+
+/* Typography Overrides (Global fallback) */
+.font-headline {
+  font-family: 'Manrope', sans-serif;
+}
+
+.font-body {
+  font-family: 'Inter', sans-serif;
+}
+
+/* Fallback explicitly for new Design System tokens if Tailwind watcher didn't pick up the new tailwind.config.js */
+.text-on-surface { color: #131b2e !important; }
+.text-on-surface-variant { color: #434655 !important; }
+.bg-surface-container-lowest { background-color: #ffffff !important; }
+.bg-surface-container-low { background-color: #f2f3ff !important; }
+.bg-surface { background-color: #faf8ff !important; }
+.border-outline-variant { border-color: rgba(195, 198, 215, 0.5) !important; }
+.text-primary { color: #004ac6 !important; }
+.bg-error-container { background-color: #ffdad6 !important; }
+.text-error { color: #ba1a1a !important; }
+.bg-error { background-color: #ba1a1a !important; }
