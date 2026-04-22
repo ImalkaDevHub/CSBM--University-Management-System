@@ -20,7 +20,7 @@ import {
   SearchOutlined, EyeOutlined, HistoryOutlined,
   BellOutlined, FileTextOutlined, FileExcelOutlined,
   EnvironmentOutlined, FilterOutlined,
-  TableOutlined, CloseCircleOutlined
+  TableOutlined, CloseCircleOutlined, CreditCardOutlined
 } from '@ant-design/icons';
 import axios from 'axios';
 import dayjs from 'dayjs';
@@ -3327,7 +3327,7 @@ const NAV_SECTIONS = [
   },
   {
     label: 'FINANCE',
-    items: [{ icon: '💳', label: 'Payment Management', path: '/admin-dashboard/payments' }],
+    items: [{ icon: <CreditCardOutlined />, label: 'Payment Management', path: '/admin-dashboard/payments' }],
   },
   {
     label: 'REPORTS',
