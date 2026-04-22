@@ -120,7 +120,8 @@ function CourseCatalog() {
           paymentType: 'course',
           referenceId: course._id || course.id,
           itemName: course.name || course.title,
-          amount: course.courseFee || course.fee || 150000,
+          // TODO: Change back to course.courseFee || course.fee || 150000 for production
+          amount: 100,
           courseName: course.name
         });
       } else {
@@ -333,7 +334,8 @@ function CourseCatalog() {
                           paymentType: 'course',
                           referenceId: selectedCourse._id || selectedCourse.id,
                           itemName: selectedCourse.name,
-                          amount: selectedCourse.courseFee || selectedCourse.fee || 150000
+                          // TODO: Change back to selectedCourse.courseFee || selectedCourse.fee || 150000 for production
+                          amount: 100
                         });
                       }
                     }}
