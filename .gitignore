@@ -1,6 +1,6 @@
 node_modules/
 .env
-backend/node_modules/
-frontend/node_modules/
-backend/.env
-frontend/.env
+csbm-mern-backend/node_modules/
+csbm-frontend/node_modules/
+csbm-mern-backend/.env
+csbm-frontend/.env
