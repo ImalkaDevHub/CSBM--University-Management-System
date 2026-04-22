@@ -194,8 +194,30 @@ export default function About() {
                                 </div>
                             </div>
                             <div className="relative">
-                                <div className="aspect-square rounded-2xl overflow-hidden shadow-lg border border-slate-200 bg-white">
-                                    <img alt="Campus Life" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuANvmrHXzi7mw4G4znC8AmqyJP0457WVwWGIJidtp0OuyxZdezEa0QyuqksqKmWSseO7bP6ti6qM41Y5t03M6EqdxzwJLUoIQCCP6qVM6s54lK1QWH3LqQ4voLbKV_SIgibNhudDmWmRcQo5Wsvr5kzOJOKBDfn4l3IBygBgG63H-OqVwKqMO2cZBjHqUChxe5DzArrYhIGYqLWA_bv3rQCRWD-LZOV-7iR2IDiBi1Bp-dWFjw8rHLLQGTJdeqGWC6T62bGenYeoQ4"/>
+                                <div className="aspect-square rounded-2xl overflow-hidden shadow-lg border border-slate-200 relative">
+                                    {/* Background photo */}
+                                    <img
+                                        alt="Campus Life"
+                                        className="absolute inset-0 w-full h-full object-cover"
+                                        src="https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?q=80&w=2070&auto=format&fit=crop"
+                                    />
+                                    {/* Dark gradient overlay */}
+                                    <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/40 to-black/70" />
+
+                                    {/* Text content on top */}
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-8 z-10">
+                                        <p className="text-white/70 text-xs font-bold tracking-[0.4em] uppercase mb-3">Welcome to</p>
+                                        <h3
+                                            className="text-white font-black leading-none tracking-tight"
+                                            style={{ fontSize: 'clamp(3rem, 8vw, 5.5rem)', textShadow: '0 4px 24px rgba(0,0,0,0.5)' }}
+                                        >
+                                            CAMPUS<br />LIFE
+                                        </h3>
+                                        <div className="mt-5 w-12 h-0.5 bg-white/50 mx-auto rounded-full" />
+                                        <p className="text-white/80 text-sm font-semibold tracking-widest uppercase mt-4">
+                                            Natural to Natural<br />Safe to Work
+                                        </p>
+                                    </div>
                                 </div>
                                 <div className="absolute -bottom-6 -left-6 bg-white border border-slate-200 p-8 rounded-2xl shadow-xl hidden md:block">
                                     <p className="text-blue-600 font-black text-4xl">15+</p>

@@ -194,7 +194,10 @@ const LandingPage = () => {
     };
 
     return (
-        <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden font-display text-slate-900 antialiased">
+        <div
+            className="landing-page-root relative flex min-h-screen w-full flex-col overflow-x-hidden text-slate-900 antialiased"
+            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+        >
             {/* NAVBAR — Glassmorphism */}
             <header
                 style={{
@@ -307,7 +310,8 @@ const LandingPage = () => {
                             initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.8, delay: 0.1 }}
-                            className="text-5xl sm:text-7xl font-black tracking-tight text-white mt-8 drop-shadow-sm leading-[1.1]"
+                            className="text-5xl sm:text-7xl tracking-tight text-white mt-8 drop-shadow-sm leading-[1.08]"
+                            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800 }}
                         >
                             Empowering <br className="hidden sm:block" />
                             Future <RotatingText />
@@ -317,7 +321,8 @@ const LandingPage = () => {
                             initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.8, delay: 0.2 }}
-                            className="text-lg sm:text-xl text-white/80 max-w-2xl mx-auto mt-6 leading-relaxed"
+                            className="text-lg sm:text-xl text-white/90 max-w-2xl mx-auto mt-6 leading-relaxed"
+                            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 400 }}
                         >
                             High-performance academic programs, advanced learning strategies, and holistic development to help your career grow — delivered fast, priced fairly.
                         </motion.p>
@@ -383,7 +388,7 @@ const LandingPage = () => {
                     whileInView="visible"
                     viewport={{ once: true, margin: "-50px" }}
                     variants={staggerContainer}
-                    className="bg-white py-24 sm:py-32 relative"
+                    className="bg-white py-24 sm:py-32"
                 >
                     <div className="max-w-[1280px] mx-auto px-6 lg:px-8">
                         <div className="text-center max-w-2xl mx-auto mb-20">
@@ -537,8 +542,14 @@ const LandingPage = () => {
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
                             {/* Featured large card */}
                             <motion.div variants={fadeInUp} className="lg:col-span-1 bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-md transition-shadow flex flex-col group cursor-pointer">
-                                <div className="h-56 bg-gradient-to-br from-blue-600 to-sky-400 relative p-5 flex items-end">
-                                    <div className="flex gap-2">
+                                <div className="h-56 relative overflow-hidden">
+                                    <img
+                                        src="/science_tech_fair.png"
+                                        alt="Annual Science & Technology Innovation Fair"
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent" />
+                                    <div className="absolute bottom-4 left-4 flex gap-2">
                                         <span className="bg-white/25 text-white text-xs font-bold rounded-full px-3 py-1 backdrop-blur-md shadow-sm">Feb 2026</span>
                                         <span className="bg-white/25 text-white text-xs font-bold rounded-full px-3 py-1 backdrop-blur-md shadow-sm">Campus Event</span>
                                     </div>
@@ -555,7 +566,7 @@ const LandingPage = () => {
                             <div className="lg:col-span-2 flex flex-col gap-5">
                                 {/* Card A */}
                                 <motion.div variants={fadeInUp} className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm hover:shadow-md hover:border-blue-200 transition-all flex gap-5 items-center cursor-pointer group">
-                                    <div className="bg-gradient-to-br from-indigo-500 to-blue-600 w-24 h-24 rounded-xl flex-shrink-0 shadow-inner"></div>
+                                    <img src="/academic_icon.png" alt="Academic" className="w-24 h-24 rounded-xl flex-shrink-0 object-cover shadow-sm" />
                                     <div className="flex flex-col justify-center py-2 pr-4">
                                         <span className="text-indigo-600 text-xs font-bold uppercase tracking-wider mb-2">Academic</span>
                                         <h4 className="text-slate-900 font-bold text-lg leading-tight group-hover:text-blue-600 transition-colors">New Master's Program in Data Science Announced</h4>
@@ -566,7 +577,7 @@ const LandingPage = () => {
                                 </motion.div>
                                 {/* Card B */}
                                 <motion.div variants={fadeInUp} className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm hover:shadow-md hover:border-blue-200 transition-all flex gap-5 items-center cursor-pointer group">
-                                    <div className="bg-gradient-to-br from-teal-500 to-emerald-500 w-24 h-24 rounded-xl flex-shrink-0 shadow-inner"></div>
+                                    <img src="/events_icon.png" alt="Events" className="w-24 h-24 rounded-xl flex-shrink-0 object-cover shadow-sm" />
                                     <div className="flex flex-col justify-center py-2 pr-4">
                                         <span className="text-teal-600 text-xs font-bold uppercase tracking-wider mb-2">Events</span>
                                         <h4 className="text-slate-900 font-bold text-lg leading-tight group-hover:text-blue-600 transition-colors">Spring Campus Festival Schedule &amp; Activities</h4>
@@ -577,7 +588,7 @@ const LandingPage = () => {
                                 </motion.div>
                                 {/* Card C */}
                                 <motion.div variants={fadeInUp} className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm hover:shadow-md hover:border-blue-200 transition-all flex gap-5 items-center cursor-pointer group">
-                                    <div className="bg-gradient-to-br from-orange-400 to-amber-500 w-24 h-24 rounded-xl flex-shrink-0 shadow-inner"></div>
+                                    <img src="/alumni_icon.png" alt="Alumni" className="w-24 h-24 rounded-xl flex-shrink-0 object-cover shadow-sm" />
                                     <div className="flex flex-col justify-center py-2 pr-4">
                                         <span className="text-orange-600 text-xs font-bold uppercase tracking-wider mb-2">Alumni</span>
                                         <h4 className="text-slate-900 font-bold text-lg leading-tight group-hover:text-blue-600 transition-colors">Alumni Networking Gala Registration Open</h4>
@@ -599,24 +610,34 @@ const LandingPage = () => {
                     variants={fadeInUp}
                     className="px-6 pb-24"
                 >
-                    <div className="bg-blue-600 py-20 px-8 rounded-3xl max-w-6xl mx-auto text-center shadow-xl shadow-blue-600/20 relative overflow-hidden">
-                        {/* Decorative background shapes */}
-                        <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 rounded-full bg-blue-500/50 blur-3xl mix-blend-screen pointer-events-none"></div>
-                        <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-64 h-64 rounded-full bg-sky-400/50 blur-3xl mix-blend-screen pointer-events-none"></div>
+                    <div
+                        className="py-20 px-8 rounded-3xl max-w-6xl mx-auto text-center relative overflow-hidden"
+                        style={{
+                            background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #0f172a 100%)',
+                            boxShadow: '0 25px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.06)',
+                        }}
+                    >
+                        {/* Decorative glow blobs */}
+                        <div className="absolute top-0 right-0 -mt-10 -mr-10 w-72 h-72 rounded-full bg-blue-600/20 blur-3xl pointer-events-none"></div>
+                        <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-72 h-72 rounded-full bg-indigo-600/15 blur-3xl pointer-events-none"></div>
 
                         <div className="relative z-10">
                             <h2 className="text-4xl sm:text-5xl font-black text-white tracking-tight">Ready to Begin Your Journey?</h2>
-                            <p className="text-white/80 text-xl mt-6 max-w-2xl mx-auto font-medium">
+                            <p className="text-slate-400 text-xl mt-6 max-w-2xl mx-auto font-medium">
                                 Join 2,500+ students already building their future at CSBM Campus.
                             </p>
                             <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center items-center">
                                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full sm:w-auto">
-                                    <Link to="/register" className="block sm:inline-block bg-white text-blue-600 font-black rounded-full px-10 py-4 text-lg shadow-lg hover:bg-slate-50 transition-colors">
+                                    <Link
+                                        to="/register"
+                                        className="block sm:inline-block font-black rounded-full px-10 py-4 text-lg text-white transition-all"
+                                        style={{ background: 'linear-gradient(135deg, #2563eb, #7c3aed)', boxShadow: '0 8px 24px rgba(37,99,235,0.35)' }}
+                                    >
                                         Apply Now →
                                     </Link>
                                 </motion.div>
                                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full sm:w-auto">
-                                    <Link to="/contact" className="block sm:inline-block border border-white/40 bg-white/10 backdrop-blur-sm text-white font-bold rounded-full px-10 py-4 text-lg hover:bg-white hover:text-blue-600 transition-all">
+                                    <Link to="/contact" className="block sm:inline-block border border-slate-600 bg-white/5 backdrop-blur-sm text-slate-300 font-bold rounded-full px-10 py-4 text-lg hover:bg-white/10 hover:text-white transition-all">
                                         Contact Us
                                     </Link>
                                 </motion.div>
