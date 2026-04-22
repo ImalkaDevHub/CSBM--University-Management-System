@@ -202,10 +202,7 @@ function App() {
 
             {/* Student Routes */}
             <Route element={<ProtectedRoute allowedRoles={['STUDENT', 'ADMIN', 'LECTURER']} />}>
-              <Route path="student-dashboard" element={<StudentDashboard />} />
               <Route path="apply" element={<ApplicationForm />} />
-              <Route path="courses" element={<CourseCatalog />} />
-              <Route path="workshops" element={<WorkshopList />} />
             </Route>
 
             {/* Legacy Admin Routes inside old sidebar */}
@@ -219,7 +216,18 @@ function App() {
 
           </Route>
 
-          {/* --- 3. STANDALONE ADMIN DASHBOARD (own layout, no Ant sidebar) --- */}
+          {/* --- 3. STANDALONE STUDENT & ADMIN DASHBOARDS (own layout, no Ant sidebar) --- */}
+          {/* Student Dashboard - Own Layout */}
+          <Route
+            path="/student-dashboard"
+            element={
+              <ProtectedRoute allowedRoles={['STUDENT', 'ADMIN', 'LECTURER']}>
+                <StudentDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Admin Dashboard */}
           <Route
             path="/admin-dashboard/*"
             element={

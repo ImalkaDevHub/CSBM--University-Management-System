@@ -286,14 +286,6 @@ function CourseCatalog() {
           {/* HEADER */}
           <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 bg-white px-6 lg:px-10 py-3 sticky top-0 z-50 shadow-sm">
             <div className="flex items-center gap-8">
-              <div className="hidden md:flex items-center gap-9">
-                <Link className="text-slate-900 text-sm font-medium leading-normal hover:text-[#135bec] transition-colors" to="/">Home</Link>
-                <div className="w-[18px] h-[18px] flex items-center justify-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M6.75 4.5L11.25 9L6.75 13.5" stroke="#0F172A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                </div>
-                <span className="text-[#135bec] text-sm font-bold leading-normal border-b-2 border-[#135bec] pb-1">Programs</span>
-                <Link className="text-slate-900 text-sm font-medium leading-normal hover:text-[#135bec] transition-colors" to="/register">Admissions</Link>
-              </div>
             </div>
             <div className="flex flex-1 justify-end gap-4 items-center">
               <Link to="/student-portal" className="hidden sm:flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#135bec] text-white text-sm font-bold leading-normal hover:bg-[#135bec]/90 transition-all shadow-md">
@@ -313,17 +305,17 @@ function CourseCatalog() {
             </div>
 
             {/* UPGRADE: ELIGIBILITY CHECKER SECTION */}
-            <div className="bg-[#0b132b] p-6 lg:p-8 rounded-2xl text-white shadow-xl mb-12 border border-slate-800">
-              <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-                <span className="material-symbols-outlined text-blue-400">verified_user</span>
+            <div className="my-8 bg-white border border-slate-200 rounded-2xl p-8 shadow-sm">
+              <h2 className="text-slate-900 font-bold text-xl mb-6 flex items-center gap-2">
+                <span className="material-symbols-outlined text-blue-600">verified_user</span>
                 Automated Eligibility Checker
               </h2>
 
               <div className="flex flex-col md:flex-row gap-4 items-end">
                 <div className="flex-1 w-full">
-                  <label className="block text-sm text-slate-400 mb-2 font-medium">Select Program</label>
+                  <label className="block text-slate-600 text-sm font-medium mb-2">Select Program</label>
                   <select
-                    className="w-full bg-slate-800/50 border border-slate-700 rounded-lg p-3 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                    className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-700 bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-sm cursor-pointer"
                     value={eligibilityCourse}
                     onChange={(e) => setEligibilityCourse(e.target.value)}
                   >
@@ -335,9 +327,9 @@ function CourseCatalog() {
                 </div>
 
                 <div className="flex-1 w-full">
-                  <label className="block text-sm text-slate-400 mb-2 font-medium">A/L Stream</label>
+                  <label className="block text-slate-600 text-sm font-medium mb-2">A/L Stream</label>
                   <select
-                    className="w-full bg-slate-800/50 border border-slate-700 rounded-lg p-3 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                    className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-700 bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-sm cursor-pointer"
                     value={stream}
                     onChange={(e) => setStream(e.target.value)}
                   >
@@ -352,9 +344,9 @@ function CourseCatalog() {
                 </div>
 
                 <div className="flex-1 w-full">
-                  <label className="block text-sm text-slate-400 mb-2 font-medium">Results (Passes)</label>
+                  <label className="block text-slate-600 text-sm font-medium mb-2">Results (Passes)</label>
                   <select
-                    className="w-full bg-slate-800/50 border border-slate-700 rounded-lg p-3 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                    className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-700 bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-sm cursor-pointer"
                     value={passes}
                     onChange={(e) => setPasses(e.target.value)}
                   >
@@ -369,7 +361,7 @@ function CourseCatalog() {
                 <button
                   onClick={handleCheckEligibility}
                   disabled={isChecking}
-                  className="w-full md:w-auto bg-blue-600 hover:bg-blue-500 text-white px-8 py-3 rounded-lg font-bold transition-all disabled:opacity-50 shadow-[0_0_15px_rgba(37,99,235,0.3)] hover:shadow-[0_0_20px_rgba(37,99,235,0.5)]"
+                  className="w-full md:w-auto bg-blue-600 text-white rounded-xl px-8 py-3 font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-200 disabled:opacity-50"
                 >
                   {isChecking ? 'Checking...' : 'Check Status'}
                 </button>
@@ -377,21 +369,21 @@ function CourseCatalog() {
 
               {/* Eligibility Result Display */}
               {eligibilityResult && (
-                <div className={`mt-8 p-5 rounded-xl border ${eligibilityResult.eligible ? 'border-emerald-500/30 bg-emerald-900/20' : 'border-red-500/30 bg-red-900/20'} animate-fade-in`}>
+                <div className={`${eligibilityResult.eligible ? 'bg-green-50 border-green-200 text-green-700' : 'bg-red-50 border-red-200 text-red-700'} border rounded-xl p-4 mt-4 font-semibold animate-fade-in`}>
                   <div className="flex items-start gap-4">
-                    <div className={`text-3xl ${eligibilityResult.eligible ? 'text-emerald-400' : 'text-red-400'}`}>
+                    <div className="text-3xl">
                       {eligibilityResult.eligible ? '✅' : '❌'}
                     </div>
-                    <div>
-                      <h3 className={`text-lg font-bold ${eligibilityResult.eligible ? 'text-emerald-400' : 'text-red-400'}`}>
+                    <div className="w-full">
+                      <h3 className="text-lg font-bold">
                         {eligibilityResult.eligible ? 'Eligible to Apply!' : 'Not Eligible'}
                       </h3>
-                      <p className="text-slate-300 mt-1">{eligibilityResult.reason}</p>
+                      <p className={`mt-1 font-normal ${eligibilityResult.eligible ? 'text-green-800' : 'text-red-800'}`}>{eligibilityResult.reason}</p>
 
                       {eligibilityResult.eligible && eligibilityResult.courseFee && (
-                        <div className="mt-4 inline-flex items-center bg-slate-800/80 px-4 py-2 rounded-lg border border-slate-700">
-                          <span className="text-slate-400 text-sm mr-2">Total Course Fee: </span>
-                          <span className="text-emerald-400 font-bold text-lg">{formatFee(eligibilityResult.courseFee)}</span>
+                        <div className="mt-4 inline-flex items-center bg-white px-4 py-2 rounded-lg border border-green-200 shadow-sm">
+                          <span className="text-slate-500 text-sm mr-2 font-medium">Total Course Fee: </span>
+                          <span className="text-green-700 font-bold text-lg">{formatFee(eligibilityResult.courseFee)}</span>
                         </div>
                       )}
                     </div>

@@ -31,25 +31,20 @@ export default function Login() {
                     return;
                 }
 
-                const role = response.data.user?.role || response.data.role || '';
+                const role = (response.data.user?.role || response.data.role || '').toUpperCase();
                 
                 // Save user data to localStorage
-                localStorage.setItem('userRole', role);
-                localStorage.setItem('userName', response.data.name);
                 localStorage.setItem('token', response.data.token);
+                localStorage.setItem('userRole', role);
+                localStorage.setItem('userName', response.data.user?.name || response.data.name || '');
                 // Store full user object for dashboards
-                localStorage.setItem('user', JSON.stringify({
-                    _id: response.data.id || response.data._id,
-                    name: response.data.name,
-                    email: response.data.email,
-                    role: role,
-                }));
+                localStorage.setItem('user', JSON.stringify(response.data.user || response.data));
 
                 // Show success message
-                message.success(`Welcome back, ${response.data.name}!`);
+                message.success(`Welcome back, ${response.data.user?.name || response.data.name}!`);
 
                 // Redirect based on role
-                if (role.toLowerCase() === 'admin') {
+                if (role === 'ADMIN') {
                     navigate('/admin-dashboard');
                 } else {
                     navigate('/student-dashboard');

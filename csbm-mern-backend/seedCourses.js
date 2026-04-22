@@ -1,92 +1,180 @@
-const dotenv = require('dotenv');
-dotenv.config();
+/**
+ * CSBM Course Seed Script
+ * Run with: node seedCourses.js
+ * Seeds the MongoDB database with a rich set of courses.
+ */
 
-const connectDB = require('./config/db');
+require('dotenv').config();
+const mongoose = require('mongoose');
 const Course = require('./models/Course');
 
-const runSeed = async () => {
-    console.log('Connecting to database...');
-    await connectDB();
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/csbm';
 
-    const courses = [
-        {
-            code: 'CIT-102',
-            name: 'Diploma in Software Engineering',
-            courseFee: 175000,
-            intakeDate: new Date('2026-06-01'),
-            applicationDeadline: new Date('2026-05-20'),
-            intakeStatus: 'OPEN'
-        },
-        {
-            code: 'CIT-201',
-            name: 'BSc in Computer Science',
-            courseFee: 450000,
-            intakeDate: new Date('2026-09-01'),
-            applicationDeadline: new Date('2026-08-15'),
-            intakeStatus: 'OPEN'
-        },
-        {
-            code: 'CIT-301',
-            name: 'HND in Cybersecurity',
-            courseFee: 320000,
-            intakeDate: new Date('2026-07-01'),
-            applicationDeadline: new Date('2026-06-25'),
-            intakeStatus: 'OPEN'
-        },
-        {
-            code: 'BUS-101',
-            name: 'Diploma in Business Management',
-            courseFee: 120000,
-            intakeDate: new Date('2026-05-01'),
-            applicationDeadline: new Date('2026-04-20'),
-            intakeStatus: 'OPEN'
-        },
-        {
-            code: 'BUS-201',
-            name: 'BSc in Accounting & Finance',
-            courseFee: 380000,
-            intakeDate: new Date('2026-09-01'),
-            applicationDeadline: new Date('2026-08-15'),
-            intakeStatus: 'OPEN'
-        },
-        {
-            code: 'BUS-301',
-            name: 'MBA in Strategic Management',
-            courseFee: 650000,
-            intakeDate: new Date('2026-10-01'),
-            applicationDeadline: new Date('2026-09-30'),
-            intakeStatus: 'UPCOMING'
-        },
-        {
-            code: 'BENG-202',
-            name: 'HND in Civil Engineering',
-            courseFee: 420000,
-            intakeDate: new Date('2026-06-01'),
-            applicationDeadline: new Date('2026-05-25'),
-            intakeStatus: 'OPEN'
-        },
-        {
-            code: 'BENG-301',
-            name: 'BSc in Electrical Engineering',
-            courseFee: 780000,
-            intakeDate: new Date('2026-09-01'),
-            applicationDeadline: new Date('2026-08-15'),
-            intakeStatus: 'OPEN'
-        }
-    ];
+const courses = [
+  // ─── IT & Computing ───────────────────────────────────────────────────────
+  {
+    name: 'BSc (Hons) in Software Engineering',
+    code: 'SE-401',
+    intakeDate: new Date('2026-06-01'),
+    applicationDeadline: new Date('2026-05-15'),
+    courseFee: 185000,
+    intakeStatus: 'OPEN',
+    eligibility: { requiredStream: 'Maths', minimumPasses: 3 },
+  },
+  {
+    name: 'Diploma in Information Technology',
+    code: 'DIT-201',
+    intakeDate: new Date('2026-07-01'),
+    applicationDeadline: new Date('2026-06-20'),
+    courseFee: 95000,
+    intakeStatus: 'OPEN',
+    eligibility: { requiredStream: 'Any', minimumPasses: 2 },
+  },
+  {
+    name: 'BSc (Hons) in Cybersecurity',
+    code: 'CYB-401',
+    intakeDate: new Date('2026-09-01'),
+    applicationDeadline: new Date('2026-08-10'),
+    courseFee: 210000,
+    intakeStatus: 'OPEN',
+    eligibility: { requiredStream: 'Maths', minimumPasses: 3 },
+  },
+  {
+    name: 'Higher National Diploma in Computing',
+    code: 'HND-301',
+    intakeDate: new Date('2026-08-01'),
+    applicationDeadline: new Date('2026-07-15'),
+    courseFee: 130000,
+    intakeStatus: 'OPEN',
+    eligibility: { requiredStream: 'Any', minimumPasses: 2 },
+  },
+  {
+    name: 'Certificate in Web Development & UI/UX',
+    code: 'WEB-101',
+    intakeDate: new Date('2026-10-01'),
+    applicationDeadline: new Date('2026-09-01'),
+    courseFee: 65000,
+    intakeStatus: 'UPCOMING',
+    eligibility: { requiredStream: 'Any', minimumPasses: 0 },
+  },
+  {
+    name: 'BSc (Hons) in Artificial Intelligence & Data Science',
+    code: 'AI-401',
+    intakeDate: new Date('2026-06-15'),
+    applicationDeadline: new Date('2026-05-30'),
+    courseFee: 225000,
+    intakeStatus: 'OPEN',
+    eligibility: { requiredStream: 'Maths', minimumPasses: 3 },
+  },
 
-    try {
-        console.log('Seeding courses...');
-        for (const c of courses) {
-            await Course.findOneAndUpdate({ code: c.code }, c, { upsert: true, new: true, setDefaultsOnInsert: true });
-            console.log(`Upserted course: ${c.code}`);
-        }
-        console.log('Seed completed successfully!');
-    } catch (err) {
-        console.error('Error seeding courses:', err);
-    } finally {
-        process.exit(0);
+  // ─── Business & Management ─────────────────────────────────────────────────
+  {
+    name: 'BSc (Hons) in Business Management',
+    code: 'BM-401',
+    intakeDate: new Date('2026-06-01'),
+    applicationDeadline: new Date('2026-05-18'),
+    courseFee: 165000,
+    intakeStatus: 'OPEN',
+    eligibility: { requiredStream: 'Commerce', minimumPasses: 3 },
+  },
+  {
+    name: 'Diploma in Accounting & Finance',
+    code: 'ACF-201',
+    intakeDate: new Date('2026-07-15'),
+    applicationDeadline: new Date('2026-06-30'),
+    courseFee: 88000,
+    intakeStatus: 'OPEN',
+    eligibility: { requiredStream: 'Commerce', minimumPasses: 2 },
+  },
+  {
+    name: 'Postgraduate Diploma in Marketing Management',
+    code: 'MKT-501',
+    intakeDate: new Date('2026-08-01'),
+    applicationDeadline: new Date('2026-07-10'),
+    courseFee: 145000,
+    intakeStatus: 'OPEN',
+    eligibility: { requiredStream: 'Any', minimumPasses: 3 },
+  },
+  {
+    name: 'Certificate in Human Resource Management',
+    code: 'HRM-101',
+    intakeDate: new Date('2026-09-15'),
+    applicationDeadline: new Date('2026-09-01'),
+    courseFee: 55000,
+    intakeStatus: 'UPCOMING',
+    eligibility: { requiredStream: 'Any', minimumPasses: 2 },
+  },
+  {
+    name: 'MBA — Master of Business Administration',
+    code: 'MBA-601',
+    intakeDate: new Date('2027-01-15'),
+    applicationDeadline: new Date('2026-12-01'),
+    courseFee: 380000,
+    intakeStatus: 'UPCOMING',
+    eligibility: { requiredStream: 'Any', minimumPasses: 3 },
+  },
+
+  // ─── Engineering ───────────────────────────────────────────────────────────
+  {
+    name: 'BEng (Hons) in Electrical & Electronic Engineering',
+    code: 'EEE-401',
+    intakeDate: new Date('2026-06-01'),
+    applicationDeadline: new Date('2026-05-15'),
+    courseFee: 195000,
+    intakeStatus: 'OPEN',
+    eligibility: { requiredStream: 'Maths', minimumPasses: 3 },
+  },
+  {
+    name: 'BEng (Hons) in Civil Engineering',
+    code: 'CE-401',
+    intakeDate: new Date('2026-07-01'),
+    applicationDeadline: new Date('2026-06-10'),
+    courseFee: 188000,
+    intakeStatus: 'OPEN',
+    eligibility: { requiredStream: 'Maths', minimumPasses: 3 },
+  },
+  {
+    name: 'Diploma in Mechanical Engineering Technology',
+    code: 'MET-201',
+    intakeDate: new Date('2026-08-01'),
+    applicationDeadline: new Date('2026-07-20'),
+    courseFee: 112000,
+    intakeStatus: 'OPEN',
+    eligibility: { requiredStream: 'Technology', minimumPasses: 2 },
+  },
+  {
+    name: 'BEng (Hons) in Mechatronics Engineering',
+    code: 'MCH-401',
+    intakeDate: new Date('2027-01-01'),
+    applicationDeadline: new Date('2026-12-15'),
+    courseFee: 205000,
+    intakeStatus: 'UPCOMING',
+    eligibility: { requiredStream: 'Maths', minimumPasses: 3 },
+  },
+];
+
+async function seed() {
+  try {
+    await mongoose.connect(MONGO_URI);
+    console.log('✅ Connected to MongoDB:', MONGO_URI);
+
+    const existing = await Course.countDocuments();
+    if (existing > 0) {
+      console.log(`ℹ️  Found ${existing} existing courses. Clearing them first...`);
+      await Course.deleteMany({});
+      console.log('🗑️  Existing courses cleared.');
     }
-};
 
-runSeed();
+    const inserted = await Course.insertMany(courses);
+    console.log(`🎓 Successfully seeded ${inserted.length} courses:\n`);
+    inserted.forEach(c => console.log(`   [${c.code}] ${c.name} — LKR ${c.courseFee.toLocaleString()} (${c.intakeStatus})`));
+
+    await mongoose.disconnect();
+    console.log('\n✅ Done. Database connection closed.');
+  } catch (err) {
+    console.error('❌ Seed failed:', err.message);
+    process.exit(1);
+  }
+}
+
+seed();
