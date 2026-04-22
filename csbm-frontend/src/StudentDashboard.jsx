@@ -51,6 +51,9 @@ const StudentDashboard = () => {
   const navigate = useNavigate();
 
   const [activePanel, setActivePanel] = useState('dashboard');
+  const [payments, setPayments] = useState([]);
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  const [toast, setToast] = useState(null);
 
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
@@ -86,6 +89,74 @@ const StudentDashboard = () => {
   const handleLogout = () => {
     localStorage.removeItem('token');
     navigate('/login');
+  };
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const paymentStatus = params.get('payment');
+    const orderId = params.get('order_id');
+
+    if (paymentStatus === 'success') {
+      setActivePanel('payments');
+      setToast({ message: '✅ Payment successful! Your enrollment is confirmed.', type: 'success' });
+      setTimeout(() => setToast(null), 5000);
+      setAppRefresh(prev => prev + 1);
+      window.history.replaceState({}, '', '/student-dashboard');
+    } else if (paymentStatus === 'cancelled') {
+      setToast({ message: '❌ Payment was cancelled.', type: 'error' });
+      setTimeout(() => setToast(null), 3000);
+      window.history.replaceState({}, '', '/student-dashboard');
+    }
+  }, []);
+
+  const handlePayment = async ({ paymentType, referenceId, itemName, amount }) => {
+    setPaymentLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const userStr = localStorage.getItem('user');
+      const userObj = userStr && userStr !== 'undefined' ? JSON.parse(userStr) : {};
+
+      const res = await fetch('/api/payments/initiate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          paymentType,
+          referenceId,
+          itemName,
+          amount,
+          firstName: userObj?.name?.split(' ')[0] || 'Student',
+          lastName: userObj?.name?.split(' ')[1] || '',
+          email: userObj?.email || '',
+          phone: userObj?.phone || '0771234567'
+        })
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.paymentData) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = 'https://sandbox.payhere.lk/pay/checkout';
+
+        Object.entries(data.paymentData).forEach(([key, value]) => {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = key;
+          input.value = value;
+          form.appendChild(input);
+        });
+
+        document.body.appendChild(form);
+        form.submit();
+      }
+    } catch (err) {
+      console.error('Payment error:', err);
+    } finally {
+      setPaymentLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -197,6 +268,7 @@ const StudentDashboard = () => {
         fetchSafely('/api/courses/enrolled', setCourses, []),
         fetchSafely('/api/assignments/upcoming', setAssignments, []),
         fetchSafely('/api/schedule/weekly', setSchedule, []),
+        fetchSafely('/api/payments/my-payments', setPayments, []),
         fetchApplication(),
         fetchNotifications(),
       ]);
@@ -252,8 +324,6 @@ const StudentDashboard = () => {
     if (!name) return 'S';
     return name.split(' ').map(n=>n[0]).join('').substring(0, 2).toUpperCase();
   };
-
-  const payments = [];
 
   // PANELS
   const DashboardContent = () => (
@@ -621,31 +691,110 @@ const StudentDashboard = () => {
   );
 
   const PaymentHistoryContent = () => (
-    <div className="p-8">
-      <h2 className="text-2xl font-black text-slate-900 mb-2">Payment History</h2>
-      <p className="text-slate-500 mb-8">View all your transactions and invoices.</p>
-      {payments.length > 0 ? (
-        payments.map((p, i) => (
-          <div key={i} className="bg-white border border-slate-200 rounded-2xl p-6 mb-4 flex justify-between items-center shadow-sm">
-            <div>
-              <p className="font-bold text-slate-900">{p.itemName}</p>
-              <p className="text-slate-400 text-sm">{new Date(p.createdAt).toLocaleDateString()}</p>
-            </div>
-            <div className="text-right">
-              <p className="font-black text-slate-900">
-                LKR {p.amount?.toLocaleString()}
-              </p>
-              <span className={`text-xs font-bold ${p.status === 'completed' ? 'text-green-600' : 'text-yellow-600'}`}>
-                {p.status?.toUpperCase()}
-              </span>
+    <div className="p-8 max-w-5xl">
+      <h2 className="text-2xl font-black text-slate-900 mb-1 font-headline">Payment History</h2>
+      <p className="text-slate-500 text-sm mb-8">View all your transactions and invoices.</p>
+  
+      {/* Summary cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        
+        {/* Total Paid */}
+        <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm relative overflow-hidden">
+          <div className="flex justify-between items-start mb-3">
+            <div className="p-3 bg-green-50 rounded-xl text-green-600 text-xl font-bold">
+              💰
             </div>
           </div>
-        ))
+          <p className="text-slate-500 text-sm font-semibold">Total Paid</p>
+          <p className="text-2xl font-black text-slate-900 mt-1 font-headline">
+            LKR {payments
+              .filter(p => p.status === 'completed')
+              .reduce((sum, p) => sum + (p.amount || 0), 0)
+              .toLocaleString()}
+          </p>
+          <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-green-400 to-emerald-500 rounded-b-2xl"/>
+        </div>
+  
+        {/* Total Transactions */}
+        <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm relative overflow-hidden">
+          <div className="p-3 bg-blue-50 rounded-xl text-blue-600 text-xl mb-3 w-fit font-bold">
+            📋
+          </div>
+          <p className="text-slate-500 text-sm font-semibold">Transactions</p>
+          <p className="text-2xl font-black text-slate-900 mt-1 font-headline">
+            {payments.length}
+          </p>
+          <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 to-blue-600 rounded-b-2xl"/>
+        </div>
+  
+        {/* Pending */}
+        <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm relative overflow-hidden">
+          <div className="p-3 bg-yellow-50 rounded-xl text-yellow-600 text-xl mb-3 w-fit font-bold">
+            ⏳
+          </div>
+          <p className="text-slate-500 text-sm font-semibold">Pending</p>
+          <p className="text-2xl font-black text-slate-900 mt-1 font-headline">
+            {payments.filter(p => p.status === 'pending').length}
+          </p>
+          <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-b-2xl"/>
+        </div>
+      </div>
+  
+      {/* Payments table */}
+      {payments.length > 0 ? (
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          
+          {/* Table header */}
+          <div className="hidden md:grid grid-cols-5 px-6 py-4 bg-slate-50 border-b border-slate-200">
+            {['Order ID', 'Item', 'Type', 'Amount', 'Status'].map(h => (
+              <p key={h} className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                {h}
+              </p>
+            ))}
+          </div>
+  
+          {/* Table rows */}
+          <div className="divide-y divide-slate-100">
+            {payments.map((payment, i) => (
+              <div key={i} className="grid grid-cols-1 md:grid-cols-5 px-6 py-5 hover:bg-slate-50 md:items-center transition gap-3 md:gap-0">
+                <p className="font-mono text-blue-600 text-sm font-bold truncate">
+                  {payment.orderId ? payment.orderId.substring(0, 16) + '...' : '-'}
+                </p>
+                <p className="font-bold text-slate-900 text-sm truncate">
+                  {payment.itemName}
+                </p>
+                <div>
+                  <span className={`rounded-full px-3 py-1.5 text-[10px] font-bold w-fit uppercase tracking-widest ${payment.paymentType === 'course' ? 'bg-purple-100 text-purple-700' : 'bg-cyan-100 text-cyan-700'}`}>
+                    {payment.paymentType || 'FEE'}
+                  </span>
+                </div>
+                <p className="font-black text-slate-900 text-sm md:text-base">
+                  LKR {payment.amount?.toLocaleString() || '0'}
+                </p>
+                <div>
+                  <span className={`rounded-full px-3 py-1.5 text-[10px] font-bold w-fit uppercase tracking-widest ${
+                    payment.status === 'completed' ? 'bg-green-100 text-green-700' : 
+                    payment.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 
+                    payment.status === 'refunded' ? 'bg-blue-100 text-blue-700' : 
+                    'bg-red-100 text-red-700'
+                  }`}>
+                    {payment.status || 'PENDING'}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       ) : (
-        <div className="bg-white rounded-2xl p-16 text-center border border-slate-200">
-          <div className="text-5xl mb-4">💳</div>
-          <p className="font-bold text-slate-900">No Payments Yet</p>
-          <p className="text-slate-400 text-sm mt-2">Your payment history will appear here.</p>
+        <div className="bg-white rounded-3xl p-16 text-center border border-slate-200 shadow-sm border-dashed">
+          <div className="text-6xl mb-4 opacity-50">💳</div>
+          <h3 className="font-bold text-slate-900 text-xl font-headline">No Payments Yet</h3>
+          <p className="text-slate-400 text-sm mt-2 max-w-sm mx-auto">
+            Your payment history will appear here after your first transaction.
+          </p>
+          <button onClick={() => setActivePanel('courses')} className="mt-8 bg-blue-600 text-white rounded-full px-8 py-3 font-bold hover:bg-blue-700 transition hover:shadow-lg text-sm w-fit mx-auto shadow-blue-500/20">
+            Browse Courses →
+          </button>
         </div>
       )}
     </div>
@@ -706,6 +855,12 @@ const StudentDashboard = () => {
 
   return (
     <div className="flex min-h-screen font-sans bg-[#faf8ff]">
+      {toast && (
+        <div className={`fixed bottom-6 right-6 z-50 rounded-2xl px-6 py-4 font-bold shadow-2xl text-white flex items-center gap-3 ${toast.type === 'success' ? 'bg-emerald-600' : 'bg-red-500'}`} style={{ animation: 'slideUp 0.3s ease forwards' }}>
+          {toast.message}
+          <button onClick={() => setToast(null)} className="ml-2 text-white/70 hover:text-white">✕</button>
+        </div>
+      )}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap');
         .font-headline { font-family: 'Manrope', sans-serif; }
@@ -799,7 +954,7 @@ const StudentDashboard = () => {
         <div key={activePanel} style={{ animation: 'fadeSlideIn 0.3s ease forwards' }} className="w-full flex-1">
           {activePanel === 'dashboard' && <DashboardContent />}
           {activePanel === 'apply' && <div className="p-8"><ApplicationForm /></div>}
-          {activePanel === 'courses' && <div className="p-0"><CourseCatalog /></div>}
+          {activePanel === 'courses' && <div className="p-0"><CourseCatalog handlePayment={handlePayment} paymentLoading={paymentLoading} /></div>}
           {activePanel === 'workshops' && <div className="p-0"><WorkshopList /></div>}
           {activePanel === 'payments' && <PaymentHistoryContent />}
           {activePanel === 'settings' && <SettingsContent />}

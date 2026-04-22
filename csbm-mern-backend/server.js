@@ -19,6 +19,7 @@ const scheduleRoutes = require('./routes/scheduleRoutes');
 const userRoutes = require('./routes/userRoutes');
 const workshopRoutes = require('./routes/workshopRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
 
 // Connect to database
 connectDB();
@@ -52,6 +53,7 @@ app.use('/api/schedule', scheduleRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/workshops', workshopRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/payments', paymentRoutes);
 
 // Global Error Handler
 app.use((err, req, res, next) => {

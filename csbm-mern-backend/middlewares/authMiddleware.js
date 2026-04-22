@@ -67,6 +67,11 @@ const authMiddleware = {
 
         // Action permitted, move to the next handler
         next();
+    },
+
+    // Alias verifyToken to protect as requested
+    protect: async (req, res, next) => {
+        return authMiddleware.verifyToken(req, res, next);
     }
 };
 
