@@ -24,6 +24,7 @@ import {
 } from '@ant-design/icons';
 import axios from 'axios';
 import dayjs from 'dayjs';
+import PaymentManagement from './admin/PaymentManagement';
 
 
 
@@ -3325,6 +3326,10 @@ const NAV_SECTIONS = [
     items: [{ icon: <CalendarOutlined />, label: 'Manage Workshops', path: '/admin-dashboard/workshops' }],
   },
   {
+    label: 'FINANCE',
+    items: [{ icon: '💳', label: 'Payment Management', path: '/admin-dashboard/payments' }],
+  },
+  {
     label: 'REPORTS',
     items: [{ icon: <BarChartOutlined />, label: 'Analytics & Reports', path: '/admin-dashboard/analytics' }],
   },
@@ -3441,6 +3446,7 @@ const AdminDashboard = () => {
             <Route path="catalog" element={<EligibilityCheckerPage courses={courses} />} />
             <Route path="version-control" element={<VersionControlPage versions={versions} setVersions={setVersions} />} />
             <Route path="workshops" element={<ManageWorkshopsPage />} />
+            <Route path="payments" element={<PaymentManagement />} />
             <Route path="analytics" element={<AnalyticsPage />} />
             <Route path="*" element={<Navigate to="/admin-dashboard" replace />} />
           </Routes>

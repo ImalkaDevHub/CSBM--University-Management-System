@@ -26,6 +26,7 @@ function CourseCatalog() {
   const [applying, setApplying] = useState(false);
   const [applied, setApplied] = useState([]);
   const [successMessage, setSuccessMessage] = useState('');
+  const [paymentLoading, setPaymentLoading] = useState(false);
 
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -93,34 +94,96 @@ function CourseCatalog() {
     setApplying(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/applications/apply-course', {
+      const appRes = await fetch(
+        '/api/applications/apply-course',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            courseId: course.id || course._id,
+            courseName: course.name,
+            courseCode: course.code || course.courseCode,
+            courseFee: course.courseFee || course.fee,
+            intake: course.intakeStatus || 'Intake 2026'
+          })
+        }
+      );
+
+      const appData = await appRes.json();
+
+      if (appRes.ok || appData.message?.includes('already pending')) {
+        setApplyModal(false);
+        await initiatePayment({
+          paymentType: 'course',
+          referenceId: course._id || course.id,
+          itemName: course.name || course.title,
+          amount: course.courseFee || course.fee || 150000,
+          courseName: course.name
+        });
+      } else {
+        alert(appData.message || 'Application failed');
+      }
+    } catch (err) {
+      console.error('Apply error:', err);
+      alert('Failed. Please try again.');
+    } finally {
+      setApplying(false);
+    }
+  };
+
+  const initiatePayment = async ({ paymentType, referenceId, itemName, amount }) => {
+    try {
+      setPaymentLoading(true);
+      const token = localStorage.getItem('token');
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      
+      const res = await fetch('/api/payments/initiate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          courseId: course.id || course._id,
-          courseName: course.name,
-          courseCode: course.code || course.courseCode,
-          courseFee: course.courseFee || course.fee,
-          intake: course.intakeStatus || 'Intake 2026'
+          paymentType,
+          referenceId,
+          itemName,
+          amount,
+          firstName: user.name?.split(' ')[0] || 'Student',
+          lastName: user.name?.split(' ')[1] || '',
+          email: user.email || '',
+          phone: user.phone || '0771234567'
         })
       });
+
       const data = await res.json();
-      if (res.ok && data.success) {
-        setApplied(prev => [...prev, course.id || course._id]);
-        setApplyModal(false);
-        setSuccessMessage(`Successfully applied for ${course.name}!`);
-        setTimeout(() => setSuccessMessage(''), 4000);
-        window.dispatchEvent(new Event('courseApplied'));
+
+      if (res.ok && data.paymentData) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = 'https://sandbox.payhere.lk/pay/checkout';
+
+        Object.entries(data.paymentData).forEach(([key, value]) => {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = key;
+          input.value = value;
+          form.appendChild(input);
+        });
+
+        document.body.appendChild(form);
+        form.submit();
       } else {
-        alert(data.message || 'Application failed');
+        console.error('Payment init failed:', data);
+        alert('Payment initialization failed. Please try again.');
+        setPaymentLoading(false);
       }
     } catch (err) {
-      alert('Network error. Please try again.');
-    } finally {
-      setApplying(false);
+      console.error('Payment error:', err);
+      alert('Payment failed. Please try again.');
+      setPaymentLoading(false);
     }
   };
 
@@ -259,22 +322,68 @@ function CourseCatalog() {
                 By clicking "Confirm Application", you are enrolling in this course. This will be visible in your Student Dashboard.
               </p>
               {applied.includes(selectedCourse.id || selectedCourse._id) && (
-                <div className="bg-green-50 border border-green-200 rounded-xl p-3 mt-4 text-green-700 text-sm font-semibold text-center">
-                  ✅ Already applied for this course
+                <div className="mt-4">
+                  <div className="bg-green-50 border border-green-200 rounded-xl p-3 mb-4 text-green-700 text-sm font-semibold text-center">
+                    ✅ Already applied for this course
+                  </div>
+                  <button
+                    onClick={() => {
+                      if(handlePayment) {
+                        handlePayment({
+                          paymentType: 'course',
+                          referenceId: selectedCourse._id || selectedCourse.id,
+                          itemName: selectedCourse.name,
+                          amount: selectedCourse.courseFee || selectedCourse.fee || 150000
+                        });
+                      }
+                    }}
+                    disabled={paymentLoading}
+                    className="w-full bg-green-600 text-white rounded-xl py-4 font-bold text-lg hover:bg-green-700 transition flex items-center justify-center gap-2 shadow-lg shadow-green-200"
+                  >
+                    {paymentLoading 
+                      ? '⏳ Processing...' 
+                      : '💳 Pay Now — LKR ' + (selectedCourse.courseFee || selectedCourse.fee || 150000).toLocaleString()
+                    }
+                  </button>
                 </div>
               )}
             </div>
-            <div className="border-t border-slate-200 px-6 py-4 flex gap-3 justify-end">
-              <button onClick={() => { setApplyModal(false); setSelectedCourse(null); }} className="bg-slate-100 text-slate-700 rounded-full px-6 py-3 font-semibold hover:bg-slate-200">
-                Cancel
-              </button>
-              <button 
-                onClick={() => handleConfirmApply(selectedCourse)} 
-                disabled={applying || applied.includes(selectedCourse.id || selectedCourse._id)}
-                className={`rounded-full px-6 py-3 font-bold text-white transition ${applying || applied.includes(selectedCourse.id || selectedCourse._id) ? 'bg-slate-300 cursor-not-allowed' : 'bg-[#135bec] hover:bg-blue-700'}`}
-              >
-                {applying ? 'Applying...' : applied.includes(selectedCourse.id || selectedCourse._id) ? '✓ Applied' : 'Confirm Application →'}
-              </button>
+            <div className="border-t border-slate-200 px-6 py-4 flex flex-col gap-3">
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 flex items-center gap-3">
+                <span className="text-xl">💳</span>
+                <div>
+                  <p className="text-blue-700 text-sm font-semibold">Payment Required</p>
+                  <p className="text-blue-600 text-xs mt-0.5">
+                    You will be redirected to PayHere secure payment after confirmation. Amount: LKR {((selectedCourse?.courseFee || selectedCourse?.fee) || 150000).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setApplyModal(false);
+                    setSelectedCourse(null);
+                  }}
+                  className="flex-1 bg-slate-100 text-slate-700 rounded-xl py-3 font-semibold hover:bg-slate-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleConfirmApply(selectedCourse)}
+                  disabled={applying || paymentLoading || applied.includes(selectedCourse?.id || selectedCourse?._id)}
+                  className={`flex-1 rounded-xl py-3 font-bold text-white transition flex items-center justify-center gap-2 ${applying || paymentLoading || applied.includes(selectedCourse?.id || selectedCourse?._id) ? 'bg-slate-300 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200'}`}
+                >
+                  {applying || paymentLoading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Processing...
+                    </>
+                  ) : applied.includes(selectedCourse?.id || selectedCourse?._id) ? '✓ Applied' : (
+                    <>💳 Confirm & Pay LKR {((selectedCourse?.courseFee || selectedCourse?.fee) || 150000).toLocaleString()}</>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>
