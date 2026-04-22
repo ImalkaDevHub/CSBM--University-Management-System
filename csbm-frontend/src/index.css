@@ -240,3 +240,24 @@ body:not(.admin-dashboard) .ant-form-item-label>label {
 .bg-error-container { background-color: #ffdad6 !important; }
 .text-error { color: #ba1a1a !important; }
 .bg-error { background-color: #ba1a1a !important; }
+
+/* ─── Landing Page Global Font Override ─────────── */
+.landing-page-root *:not(.material-symbols-outlined) {
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+}
+
+.landing-page-root h1,
+.landing-page-root h2,
+.landing-page-root h3,
+.landing-page-root h4 {
+  font-weight: 800 !important;
+  letter-spacing: -0.02em !important;
+}
+
+.landing-page-root p,
+.landing-page-root a,
+.landing-page-root button,
+.landing-page-root span:not(.material-symbols-outlined),
+.landing-page-root li {
+  font-weight: 400;
+}

@@ -42,52 +42,46 @@ const Sidebar = ({ isOpen }) => {
                 </span>
             </div>
 
-            <div className="px-4 py-2">
-                <div className="mb-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">Student Portal</div>
-                <nav className="space-y-1 mb-6">
+            <div className="py-2">
+                <div className="mb-3 px-6 text-xs font-semibold text-slate-400 uppercase tracking-wider">Student Portal</div>
+                <nav className="space-y-1 mb-8">
                     {links.filter(l => l.section === 'Student').map((link) => (
                         <NavLink
                             key={link.path}
                             to={link.path}
                             className={({ isActive }) => clsx(
-                                "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group",
+                                "flex items-center gap-3 py-3 w-full transition-all duration-300 group",
                                 isActive
-                                    ? "bg-gradient-to-r from-blue-500/10 to-purple-500/10 text-blue-600 shadow-sm"
-                                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                                    ? "border-l-4 border-blue-600 pl-5 pr-4 text-blue-600 bg-transparent"
+                                    : "border-l-4 border-transparent pl-5 pr-4 text-slate-600 hover:bg-gray-100 hover:text-slate-900"
                             )}
                         >
                             {({ isActive }) => (
                                 <>
-                                    <link.icon className={clsx("w-5 h-5", isActive ? "text-blue-600" : "text-slate-400 group-hover:text-slate-600")} />
+                                    <link.icon className={clsx("w-5 h-5", isActive ? "text-blue-600" : "text-slate-500 group-hover:text-slate-700")} />
                                     <span className="font-medium">{link.name}</span>
-                                    {isActive && (
-                                        <motion.div
-                                            layoutId="active-pill"
-                                            className="absolute left-0 w-1 h-8 bg-blue-500 rounded-r-full"
-                                        />
-                                    )}
                                 </>
                             )}
                         </NavLink>
                     ))}
                 </nav>
 
-                <div className="mb-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">Admin Tools</div>
+                <div className="mb-3 px-6 text-xs font-semibold text-slate-400 uppercase tracking-wider">Admin Tools</div>
                 <nav className="space-y-1">
                     {links.filter(l => l.section === 'Admin').map((link) => (
                         <NavLink
                             key={link.path}
                             to={link.path}
                             className={({ isActive }) => clsx(
-                                "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group",
+                                "flex items-center gap-3 py-3 w-full transition-all duration-300 group",
                                 isActive
-                                    ? "bg-gradient-to-r from-purple-500/10 to-pink-500/10 text-purple-600 shadow-sm"
-                                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                                    ? "border-l-4 border-blue-600 pl-5 pr-4 text-blue-600 bg-transparent"
+                                    : "border-l-4 border-transparent pl-5 pr-4 text-slate-600 hover:bg-gray-100 hover:text-slate-900"
                             )}
                         >
                             {({ isActive }) => (
                                 <>
-                                    <link.icon className={clsx("w-5 h-5", isActive ? "text-purple-600" : "text-slate-400 group-hover:text-slate-600")} />
+                                    <link.icon className={clsx("w-5 h-5", isActive ? "text-blue-600" : "text-slate-500 group-hover:text-slate-700")} />
                                     <span className="font-medium">{link.name}</span>
                                 </>
                             )}
