@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, message } from 'antd';
+import { QRCodeSVG } from 'qrcode.react';
 
 const formatDate = (dateStr) => {
   if (!dateStr) return 'TBD';
@@ -352,20 +353,92 @@ const WorkshopList = () => {
         centered
         className="rounded-2xl overflow-hidden"
       >
-        {registeredData && (
-          <div className="py-6">
-            <p className="text-slate-600 mb-4">
-              You have successfully secured your spot. A confirmation email has been sent to your registered address.
-            </p>
-            <div className="bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-start gap-4">
-               <span className="text-3xl text-yellow-500 mt-1">🎟️</span>
-               <div>
-                 <p className="font-bold text-slate-900 text-lg">{registeredData.workshopName || 'Upcoming Event'}</p>
-                 <p className="text-sm text-slate-500 mt-1">Make sure to add this to your calendar and arrive 15 minutes early.</p>
-               </div>
+        {registeredData && (() => {
+          // Use the backend's reference/confirmation ID if present, else generate a mock
+          const refId = registeredData.referenceId
+            || registeredData.confirmationId
+            || registeredData._id
+            || ('WKS-' + Math.floor(1000 + Math.random() * 9000));
+
+          return (
+            <div className="py-4 space-y-4">
+              {/* Confirmation message */}
+              <p className="text-slate-500 text-sm leading-relaxed">
+                You have successfully secured your spot. A confirmation email has been sent to your registered address.
+              </p>
+
+              {/* ── Event Ticket Card ── */}
+              <div className="relative bg-white border-2 border-blue-100 rounded-2xl overflow-hidden shadow-sm">
+
+                {/* Ticket top accent strip */}
+                <div className="h-1.5 w-full bg-gradient-to-r from-blue-500 via-purple-500 to-cyan-500" />
+
+                <div className="flex items-stretch">
+
+                  {/* LEFT — Event details */}
+                  <div className="flex-1 p-5 border-r border-dashed border-slate-200">
+                    {/* Header */}
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="text-2xl">🎟️</span>
+                      <span className="text-[10px] font-black tracking-widest text-blue-600 uppercase">
+                        Event Ticket
+                      </span>
+                    </div>
+
+                    {/* Workshop name */}
+                    <p className="font-black text-slate-900 text-base leading-snug line-clamp-2">
+                      {registeredData.workshopName
+                        || registeredData.title
+                        || registeredData.topic
+                        || 'Upcoming Event'}
+                    </p>
+
+                    {/* Date if available */}
+                    {(registeredData.date || registeredData.workshopDate) && (
+                      <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[13px]">calendar_today</span>
+                        {new Date(registeredData.date || registeredData.workshopDate)
+                          .toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}
+                      </p>
+                    )}
+
+                    {/* Reminder note */}
+                    <p className="text-xs text-slate-400 mt-3 leading-relaxed">
+                      Arrive 15 minutes early and keep this ticket handy.
+                    </p>
+
+                    {/* Reference ID */}
+                    <div className="mt-4 inline-block bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5">
+                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Reference ID</p>
+                      <p className="font-mono font-black text-slate-800 text-sm tracking-wider">{refId}</p>
+                    </div>
+                  </div>
+
+                  {/* RIGHT — QR Code */}
+                  <div className="flex flex-col items-center justify-center px-5 py-5 bg-slate-50 gap-2 shrink-0">
+                    <QRCodeSVG
+                      value={refId}
+                      size={88}
+                      bgColor="#ffffff"
+                      fgColor="#1e3a8a"
+                      style={{ borderRadius: 8 }}
+                    />
+                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Scan to verify</p>
+                  </div>
+
+                </div>
+
+                {/* Ticket bottom — perforated edge decoration */}
+                <div className="flex items-center px-4 py-2 bg-blue-50/50 border-t border-dashed border-blue-100">
+                  <span className="material-symbols-outlined text-blue-400 text-[14px] mr-1">check_circle</span>
+                  <p className="text-[10px] font-semibold text-blue-500">
+                    Registration confirmed by CSBM Campus
+                  </p>
+                </div>
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
       </Modal>
 
     </div>
