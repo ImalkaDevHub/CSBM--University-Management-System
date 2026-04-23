@@ -35,6 +35,47 @@ const authController = {
         }
     },
 
+    // POST /api/auth/google
+    googleLogin: async (req, res) => {
+        try {
+            const { email, name, photoURL, role, uid } = req.body;
+
+            // Find or create user
+            let user = await User.findOne({ email });
+
+            if (!user) {
+                // Create new user if they don't exist
+                user = new User({
+                    email,
+                    fullName: name,
+                    role: role || 'STUDENT',
+                    firebaseUid: uid,
+                    avatar: photoURL,
+                    // For social logins, password can be a random string or empty if model allows
+                    password: `google_${uid.substring(0, 8)}` 
+                });
+                await user.save();
+            }
+
+            // Sign JWT
+            const token = jwt.sign(
+                { id: user._id, role: user.role, email: user.email },
+                JWT_SECRET,
+                { expiresIn: '1d' }
+            );
+
+            res.status(200).json({
+                status: "success",
+                role: user.role,
+                name: user.fullName,
+                token: token
+            });
+        } catch (error) {
+            console.error('Backend Google Login Error:', error);
+            res.status(500).json({ status: "error", message: "Google verification failed", details: error.message });
+        }
+    },
+
     // GET /api/auth/create-admin
     createAdminUser: async (req, res) => {
         try {

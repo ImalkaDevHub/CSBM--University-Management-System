@@ -39,6 +39,14 @@ const userSchema = new mongoose.Schema({
         required: true,
         enum: ['ADMIN', 'STUDENT', 'LECTURER'],
         default: 'STUDENT',
+    },
+    firebaseUid: {
+        type: String,
+        required: false,
+    },
+    avatar: {
+        type: String,
+        required: false,
     }
 }, { timestamps: true });
 
