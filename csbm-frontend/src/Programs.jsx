@@ -4,6 +4,10 @@ import { motion } from 'framer-motion';
 import { useApplyFlow } from './hooks/useApplyFlow';
 import Logo from './components/Logo';
 import heroImage from './assets/programs-hero.png';
+import computingImg   from './assets/computing.png';
+import managementImg  from './assets/management.png';
+import engineeringImg from './assets/engineering.png';
+import languageImg    from './assets/language.png';
 
 const COURSES = [
     {
@@ -17,7 +21,8 @@ const COURSES = [
         deadline: "Aug 15, 2026",
         fee: "150,000",
         duration: "1 Year",
-        mode: "Full Time"
+        mode: "Full Time",
+        img: computingImg,
     },
     {
         id: 2,
@@ -30,7 +35,8 @@ const COURSES = [
         deadline: "Sep 01, 2026",
         fee: "450,000",
         duration: "3 Years",
-        mode: "Hybrid"
+        mode: "Hybrid",
+        img: managementImg,
     },
     {
         id: 3,
@@ -43,7 +49,8 @@ const COURSES = [
         deadline: "Dec 10, 2026",
         fee: "300,000",
         duration: "2 Years",
-        mode: "Full Time"
+        mode: "Full Time",
+        img: engineeringImg,
     },
     {
         id: 4,
@@ -56,7 +63,8 @@ const COURSES = [
         deadline: "Rolling",
         fee: "45,000",
         duration: "6 Months",
-        mode: "Part Time"
+        mode: "Part Time",
+        img: languageImg,
     },
     {
         id: 5,
@@ -69,7 +77,8 @@ const COURSES = [
         deadline: "Sep 01, 2026",
         fee: "550,000",
         duration: "3 Years",
-        mode: "Full Time"
+        mode: "Full Time",
+        img: computingImg,
     },
     {
         id: 6,
@@ -82,7 +91,8 @@ const COURSES = [
         deadline: "Dec 15, 2026",
         fee: "850,000",
         duration: "2 Years",
-        mode: "Weekend"
+        mode: "Weekend",
+        img: managementImg,
     },
     {
         id: 7,
@@ -95,7 +105,8 @@ const COURSES = [
         deadline: "Oct 20, 2026",
         fee: "120,000",
         duration: "1 Year",
-        mode: "Hybrid"
+        mode: "Hybrid",
+        img: managementImg,
     },
     {
         id: 8,
@@ -108,7 +119,8 @@ const COURSES = [
         deadline: "Rolling",
         fee: "80,000",
         duration: "6 Months",
-        mode: "Part Time"
+        mode: "Part Time",
+        img: computingImg,
     }
 ];
 
@@ -290,22 +302,27 @@ export default function Programs() {
                                     whileHover={{ scale: 1.02 }}
                                     className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md hover:border-blue-200 transition-all duration-300 flex flex-col"
                                 >
-                                    {/* Card Top Banner */}
-                                    <div className={`h-40 relative p-4 flex flex-col justify-between ${getBannerGradient(course.category)}`}>
-                                        <div className="flex justify-end">
-                                            <span className={`text-xs font-bold rounded-full px-3 py-1 ${getBadgeStyle(course.type)}`}>
-                                                {course.type}
-                                            </span>
-                                        </div>
-                                        <div className="text-white/80 text-xs font-mono tracking-widest bg-black/20 self-start px-2 py-1 rounded backdrop-blur-sm">
+                                    {/* Card Image Header */}
+                                    <div className="h-48 w-full overflow-hidden relative">
+                                        <img
+                                            src={course.img}
+                                            alt={`${course.title} illustration`}
+                                            className="w-full h-full object-cover rounded-t-2xl transition-transform duration-500 group-hover:scale-105"
+                                        />
+                                        {/* Type badge overlaid on image */}
+                                        <span className={`absolute top-3 right-3 text-xs font-bold rounded-full px-3 py-1 shadow ${getBadgeStyle(course.type)}`}>
+                                            {course.type}
+                                        </span>
+                                        {/* Course code chip at bottom-left */}
+                                        <span className="absolute bottom-3 left-3 text-white/90 text-[10px] font-mono tracking-widest bg-black/40 px-2 py-1 rounded backdrop-blur-sm">
                                             {course.code}
-                                        </div>
+                                        </span>
                                     </div>
 
-                                    {/* Card Body */}
+                                    {/* Card Body — title + intake/deadline */}
                                     <div className="p-5 flex flex-col flex-1">
                                         <h3 className="text-slate-900 font-bold text-base line-clamp-2 min-h-[40px]">{course.title}</h3>
-                                        
+
                                         <div className="mt-4 space-y-2">
                                             <div className="flex items-center gap-2 text-slate-500 text-sm">
                                                 <span className="material-symbols-outlined text-[18px]">calendar_month</span>
@@ -319,12 +336,12 @@ export default function Programs() {
 
                                         <div className="border-t border-slate-100 my-4" />
 
-                                        <div className="mt-auto flex justify-between items-center">
-                                            <div>
-                                                <p className="text-slate-400 text-[10px] uppercase font-bold tracking-wider mb-0.5">COURSE FEE</p>
-                                                <p className="text-slate-900 font-black text-lg leading-none">LKR {course.fee}</p>
-                                            </div>
-                                            <button onClick={() => handleApplyNow(`?program=${encodeURIComponent(course.title)}`)} className="bg-blue-600 text-white rounded-full px-4 py-2 text-sm font-semibold hover:bg-blue-700 transition-colors shadow-sm">
+                                        {/* Apply Now — full width, no price */}
+                                        <div className="mt-auto">
+                                            <button
+                                                onClick={() => handleApplyNow(`?program=${encodeURIComponent(course.title)}`)}
+                                                className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-3 font-semibold text-sm transition-colors duration-200 shadow-sm"
+                                            >
                                                 Apply Now
                                             </button>
                                         </div>

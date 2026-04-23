@@ -13,6 +13,7 @@ const analyticsRoutes = require('./routes/analyticsRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const applicationRoutes = require('./routes/applicationRoutes');
 const assignmentRoutes = require('./routes/assignmentRoutes');
+const Assignment = require('./models/Assignment'); // ensure model registers
 const authRoutes = require('./routes/authRoutes');
 const courseRoutes = require('./routes/courseRoutes');
 const scheduleRoutes = require('./routes/scheduleRoutes');
