@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Bell, Search, MessageSquare, ChevronDown, User } from 'lucide-react';
+import { Bell, Search, MessageSquare, ChevronDown } from 'lucide-react';
+import adminProfileImg from '../assets/admin-profile.png';
 
 const TopBar = ({ isDark, toggleTheme }) => {
     const [searchFocused, setSearchFocused] = useState(false);
@@ -61,9 +62,13 @@ const TopBar = ({ isDark, toggleTheme }) => {
                     onMouseLeave={() => setProfileOpen(false)}
                 >
                     <button className="flex items-center gap-2.5 px-3 py-1.5 rounded-full hover:bg-slate-50 border border-transparent hover:border-slate-200 transition-all duration-200 group">
-                        {/* Avatar */}
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-sm flex-shrink-0">
-                            <User className="w-4 h-4 text-white" />
+                        {/* Avatar — real profile photo */}
+                        <div className="w-8 h-8 rounded-full overflow-hidden ring-2 ring-blue-100 shadow-sm flex-shrink-0">
+                            <img
+                                src={adminProfileImg}
+                                alt="Admin profile"
+                                className="w-full h-full object-cover"
+                            />
                         </div>
                         {/* Name */}
                         <div className="hidden md:flex flex-col items-start">
@@ -76,9 +81,14 @@ const TopBar = ({ isDark, toggleTheme }) => {
                     {/* Dropdown */}
                     {profileOpen && (
                         <div className="absolute right-0 top-full mt-1 w-52 bg-white border border-slate-100 rounded-2xl shadow-lg py-2 z-50">
-                            <div className="px-4 py-3 border-b border-slate-50">
-                                <div className="text-sm font-semibold text-slate-800">Imalka Madushan</div>
-                                <div className="text-xs text-slate-400 mt-0.5">Student · CSBM Campus</div>
+                            <div className="px-4 py-3 border-b border-slate-50 flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-slate-100 flex-shrink-0">
+                                    <img src={adminProfileImg} alt="Admin" className="w-full h-full object-cover" />
+                                </div>
+                                <div>
+                                    <div className="text-sm font-semibold text-slate-800">Imalka Madushan</div>
+                                    <div className="text-xs text-slate-400 mt-0.5">Student · CSBM Campus</div>
+                                </div>
                             </div>
                             {[
                                 { label: 'My Profile', icon: '👤' },

@@ -4,6 +4,8 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer
 } from 'recharts';
+import student1Img   from '../../assets/student-1.png';
+import faculty1Img   from '../../assets/faculty-1.png';
 
 // ─── Stat Card ───────────────────────────────────────────────────────────────
 const StatCard = ({ icon, iconBg, value, label, trend, trendColor }) => (
@@ -40,13 +42,26 @@ const statusStyle = (status = '') => {
 const formatDate = (d) =>
   d ? new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
 
+// ── Mock people data for visual lists ────────────────────────────────────────
+const MOCK_STUDENTS = [
+  { id: 'ST-2024-001', name: 'Amara Perera',       dept: 'BSc in Computer Science',     date: '18 Apr 2026', img: student1Img },
+  { id: 'ST-2024-002', name: 'Ruwini Jayasinghe',  dept: 'Diploma in IT',                date: '17 Apr 2026', img: student1Img },
+  { id: 'ST-2024-003', name: 'Kavindu Bandara',    dept: 'HND in Engineering',           date: '15 Apr 2026', img: student1Img },
+];
+
+const MOCK_FACULTY = [
+  { id: 'FAC-001', name: 'Dr. Senali Fernando',  dept: 'Department of Computing',     role: 'Senior Lecturer',  img: faculty1Img },
+  { id: 'FAC-002', name: 'Prof. Dilini Rodrigo', dept: 'School of Business',          role: 'Associate Professor', img: faculty1Img },
+  { id: 'FAC-003', name: 'Dr. Nimal Wickrama',   dept: 'Faculty of Engineering',      role: 'Head of Department', img: faculty1Img },
+];
+
 const QUICK_ACTIONS = [
   { icon: '👥', label: 'Review Applications', path: '/admin-dashboard/approvals' },
-  { icon: '➕', label: 'Add New Course', path: '/admin-dashboard/courses' },
-  { icon: '📅', label: 'Schedule Intake', path: '/admin-dashboard/intake' },
-  { icon: '🎪', label: 'Create Workshop', path: '/admin-dashboard/workshops' },
-  { icon: '📊', label: 'View Analytics', path: '/admin-dashboard/analytics' },
-  { icon: '👤', label: 'Manage Users', path: '/admin-dashboard/users' },
+  { icon: '➕', label: 'Add New Course',       path: '/admin-dashboard/courses' },
+  { icon: '📅', label: 'Schedule Intake',      path: '/admin-dashboard/intake' },
+  { icon: '🎪', label: 'Create Workshop',       path: '/admin-dashboard/workshops' },
+  { icon: '📊', label: 'View Analytics',        path: '/admin-dashboard/analytics' },
+  { icon: '👤', label: 'Manage Users',          path: '/admin-dashboard/users' },
 ];
 
 const AdminHome = () => {
@@ -229,6 +244,65 @@ const AdminHome = () => {
             <p className="text-slate-400 text-sm text-center py-8">No registrations yet.</p>
           )}
         </div>
+      </div>
+      {/* ── People Highlights Row ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+
+        {/* Recent Enrollments */}
+        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="font-bold text-slate-900">Recent Enrollments</h2>
+            <span className="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full">+3 this week</span>
+          </div>
+          <div className="divide-y divide-slate-100">
+            {MOCK_STUDENTS.map((s) => (
+              <div key={s.id} className="flex items-center gap-4 py-3">
+                {/* Circular real photo */}
+                <img
+                  src={s.img}
+                  alt={s.name}
+                  className="h-12 w-12 rounded-full object-cover ring-2 ring-slate-100 shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-slate-900 text-sm truncate">{s.name}</p>
+                  <p className="text-slate-400 text-xs truncate">{s.dept}</p>
+                </div>
+                <div className="text-right shrink-0">
+                  <p className="text-slate-400 text-[10px] uppercase tracking-wide mb-0.5">Enrolled</p>
+                  <p className="text-slate-600 text-xs font-semibold">{s.date}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Faculty Highlights */}
+        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="font-bold text-slate-900">Faculty Highlights</h2>
+            <Link to="/admin-dashboard/users" className="text-blue-600 text-sm font-semibold hover:underline">View All →</Link>
+          </div>
+          <div className="divide-y divide-slate-100">
+            {MOCK_FACULTY.map((f) => (
+              <div key={f.id} className="flex items-center gap-4 py-3">
+                {/* Circular real photo */}
+                <img
+                  src={f.img}
+                  alt={f.name}
+                  className="h-12 w-12 rounded-full object-cover ring-2 ring-slate-100 shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-slate-900 text-sm truncate">{f.name}</p>
+                  <p className="text-slate-400 text-xs truncate">{f.dept}</p>
+                </div>
+                <span className="bg-blue-50 text-blue-700 text-[10px] font-bold px-2.5 py-1 rounded-full shrink-0 whitespace-nowrap">
+                  {f.role}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
       </div>
     </div>
   );
