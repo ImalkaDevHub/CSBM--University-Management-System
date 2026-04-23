@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { message } from 'antd';
-import { signInWithPopup } from 'firebase/auth';
-import { auth, googleProvider } from './firebase';
+import { message, Modal, Input } from 'antd';
+import { signInWithPopup, sendPasswordResetEmail } from 'firebase/auth';
+import { auth, googleProvider } from './config/firebase';
 import Logo from './components/Logo';
 import loginBg from './assets/login-bg.png';
 
@@ -13,6 +13,9 @@ export default function Login() {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('Student');
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [resetEmail, setResetEmail] = useState('');
+    const [isResetting, setIsResetting] = useState(false);
     const navigate = useNavigate();
 
     const handleGoogleSignIn = async () => {
@@ -60,6 +63,26 @@ export default function Login() {
                 : 'Google Sign-In failed. Please try again.');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleForgotPassword = async () => {
+        if (!resetEmail) {
+            message.error('Please enter your email address first.');
+            return;
+        }
+
+        setIsResetting(true);
+        try {
+            await sendPasswordResetEmail(auth, resetEmail);
+            message.success('Password reset link sent! Please check your email.');
+            setIsModalVisible(false);
+            setResetEmail('');
+        } catch (error) {
+            console.error('Password reset error:', error);
+            message.error(error.message || 'Failed to send reset email. Please try again.');
+        } finally {
+            setIsResetting(false);
         }
     };
 
@@ -207,9 +230,13 @@ export default function Login() {
 
                         {/* Forgot Password */}
                         <div className="flex justify-end pt-1">
-                            <a href="#" className="text-sm font-bold text-[#FF6B35] hover:text-[#e85b28] transition-colors">
+                            <button 
+                                type="button"
+                                onClick={() => setIsModalVisible(true)}
+                                className="text-sm font-bold text-[#FF6B35] hover:text-[#e85b28] transition-colors cursor-pointer"
+                            >
                                 Forgot password?
-                            </a>
+                            </button>
                         </div>
 
                         {/* Submit Button */}
@@ -272,6 +299,29 @@ export default function Login() {
                         </button>
                     </div>
                 </div>
+
+                {/* Reset Password Modal */}
+                <Modal
+                    title={<span className="text-xl font-bold">Reset Password</span>}
+                    open={isModalVisible}
+                    onOk={handleForgotPassword}
+                    onCancel={() => setIsModalVisible(false)}
+                    confirmLoading={isResetting}
+                    okText="Send Reset Link"
+                    okButtonProps={{ className: 'bg-[#FF6B35] hover:bg-[#e85b28]' }}
+                >
+                    <div className="py-4">
+                        <p className="text-slate-600 mb-4">
+                            Enter your registered email address and we will send you a link to reset your password.
+                        </p>
+                        <Input
+                            placeholder="your-email@example.com"
+                            value={resetEmail}
+                            onChange={(e) => setResetEmail(e.target.value)}
+                            className="py-2.5 rounded-xl border-slate-200"
+                        />
+                    </div>
+                </Modal>
             </div>
 
         </div>
