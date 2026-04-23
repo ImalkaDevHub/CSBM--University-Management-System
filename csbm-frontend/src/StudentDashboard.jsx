@@ -69,21 +69,36 @@ const StudentDashboard = () => {
   const [workshopRefresh, setWorkshopRefresh] = useState(0);
 
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [notifications, setNotifications] = useState([]);
+  const [notifications, setNotifications] = useState([
+    { id: 1, icon: '🎉', title: 'Welcome to CSBM Portal!', message: 'Your student account has been successfully activated. Explore your dashboard.', time: '2 hours ago', isRead: false },
+    { id: 2, icon: '📋', title: 'Assignment Due Soon', message: 'Admin: Assignment 1 – Essay is due in 2 days. Please submit before the deadline.', time: '5 hours ago', isRead: false },
+    { id: 3, icon: '✅', title: 'Application Update', message: 'Your application status has been updated. Check the Application Status card for details.', time: '1 day ago', isRead: false },
+    { id: 4, icon: '🎪', title: 'New Workshop Available', message: 'Admin posted a new workshop: Industry Trends in AI & ML – Seats are limited!', time: '2 days ago', isRead: true },
+    { id: 5, icon: '💳', title: 'Fee Payment Reminder', message: 'Your course fee installment is due on 30 Apr 2026. Visit the payment section to complete.', time: '3 days ago', isRead: true },
+  ]);
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const notifRef = useRef(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
 
-  // Close dropdown on outside click
+  const markAllRead = () => setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+  const markOneRead = (id) => setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
+  const dismissNotif = (id, e) => { e.stopPropagation(); setNotifications(prev => prev.filter(n => n.id !== id)); };
+
+  // Close dropdowns on outside click
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setShowDropdown(false);
       }
+      if (notifRef.current && !notifRef.current.contains(event.target)) {
+        setIsNotifOpen(false);
+      }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const handleLogout = () => {
@@ -256,7 +271,10 @@ const StudentDashboard = () => {
         const res = await fetch('/api/notifications/my-notifications', { headers });
         if (res.ok) {
           const data = await res.json();
-          setNotifications(data);
+          // Only replace mock data if the API actually returns items
+          if (Array.isArray(data) && data.length > 0) {
+            setNotifications(data);
+          }
         }
       } catch (err) { }
     };
@@ -994,12 +1012,99 @@ const StudentDashboard = () => {
           </div>
 
           <div className="flex items-center gap-3 sm:gap-6 shrink-0">
-            <button className="relative p-2 text-slate-600 hover:text-blue-600 transition">
-              <span className="material-symbols-outlined">notifications</span>
-              {unreadCount > 0 && (
-                <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
+            {/* ── Notification Bell ──────────────────────────────── */}
+            <div className="relative" ref={notifRef}>
+              <button
+                onClick={() => setIsNotifOpen(prev => !prev)}
+                className={`relative p-2 rounded-full transition-all duration-200
+                  ${isNotifOpen ? 'bg-blue-50 text-blue-600 ring-2 ring-blue-100' : 'text-slate-600 hover:text-blue-600 hover:bg-slate-50'}`}
+                aria-label="Notifications"
+              >
+                <span className="material-symbols-outlined">notifications</span>
+                {unreadCount > 0 && (
+                  <span className="absolute top-1 right-1 min-w-[18px] h-[18px] bg-red-500 rounded-full border-2 border-white flex items-center justify-center">
+                    <span className="text-white text-[9px] font-black leading-none px-0.5">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  </span>
+                )}
+              </button>
+
+              {/* Dropdown */}
+              {isNotifOpen && (
+                <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-slate-100 rounded-2xl shadow-xl z-50 overflow-hidden"
+                  style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.10)' }}>
+
+                  {/* Header */}
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-blue-600 text-[18px]">notifications</span>
+                      <span className="font-bold text-slate-900 text-sm">Notifications</span>
+                      {unreadCount > 0 && (
+                        <span className="bg-blue-600 text-white text-[10px] font-black rounded-full px-2 py-0.5 leading-none">
+                          {unreadCount} new
+                        </span>
+                      )}
+                    </div>
+                    {unreadCount > 0 && (
+                      <button onClick={markAllRead}
+                        className="text-blue-600 hover:text-blue-700 text-xs font-semibold transition-colors">
+                        Mark all read
+                      </button>
+                    )}
+                  </div>
+
+                  {/* List */}
+                  <div className="max-h-[340px] overflow-y-auto divide-y divide-slate-50">
+                    {notifications.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-10 text-slate-400">
+                        <span className="material-symbols-outlined text-4xl mb-2 opacity-30">notifications_off</span>
+                        <p className="text-sm font-medium">All caught up!</p>
+                      </div>
+                    ) : (
+                      notifications.map(notif => (
+                        <div key={notif.id} onClick={() => markOneRead(notif.id)}
+                          className={`flex items-start gap-3 px-4 py-3 cursor-pointer transition-colors group
+                            ${notif.isRead ? 'hover:bg-slate-50' : 'bg-blue-50/60 hover:bg-blue-50'}`}>
+
+                          {/* Icon */}
+                          <div className="w-9 h-9 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-base flex-shrink-0 mt-0.5">
+                            {notif.icon}
+                          </div>
+
+                          {/* Content */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2">
+                              <p className={`text-sm font-semibold leading-snug truncate
+                                ${notif.isRead ? 'text-slate-700' : 'text-slate-900'}`}>
+                                {notif.title}
+                              </p>
+                              {!notif.isRead && <span className="mt-1.5 w-2 h-2 bg-blue-500 rounded-full flex-shrink-0" />}
+                            </div>
+                            <p className="text-xs text-slate-500 mt-0.5 line-clamp-2 leading-relaxed">{notif.message}</p>
+                            <p className="text-[10px] text-slate-400 mt-1.5 font-medium">{notif.time}</p>
+                          </div>
+
+                          {/* Dismiss */}
+                          <button onClick={(e) => dismissNotif(notif.id, e)}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full hover:bg-slate-200 text-slate-400 flex-shrink-0 mt-0.5">
+                            <span className="material-symbols-outlined text-[16px]">close</span>
+                          </button>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  {/* Footer */}
+                  <div className="px-4 py-2.5 border-t border-slate-100 bg-slate-50/80">
+                    <button className="w-full text-center text-xs text-blue-600 font-semibold hover:text-blue-700 transition-colors py-1">
+                      View all notifications →
+                    </button>
+                  </div>
+                </div>
               )}
-            </button>
+            </div>
+            {/* ────────────────────────────────────────────────── */}
             
             <div className="relative" ref={dropdownRef}>
               <div 

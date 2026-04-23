@@ -3,6 +3,10 @@ import { Link } from 'react-router-dom';
 import { motion, useInView } from 'framer-motion';
 import { useApplyFlow } from './hooks/useApplyFlow';
 import Logo from './components/Logo';
+import leaderChancellorImg  from './assets/leader-chancellor.png';
+import leaderDeanImg        from './assets/leader-dean.png';
+import leaderResearchImg    from './assets/leader-research.png';
+import leaderAdmissionsImg  from './assets/leader-admissions.png';
 
 // CountUp Component for Stats Bar
 const CountUp = ({ end, suffix = '' }) => {
@@ -318,7 +322,7 @@ export default function About() {
                                 transition={{ duration: 0.3 }}
                                 className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-blue-200 text-center transition-all group"
                             >
-                                <img alt="Focus" className="w-24 h-24 rounded-full border-4 border-blue-100 mx-auto object-cover grayscale group-hover:grayscale-0 transition-all duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCaqMe7YpG_7TgH-XkQE6d-KdE_CLLgmhr8YuhYFKGfvQE4KsOMzIvdFE8U5RSb4qDGGERkHeVLyHfjiu5ogDz7nOmonlbXuQWxSyiHDVSfRFdk4TsvKguZoborhcks69KgdpaX6AHjVOCk0cJU-E-YaY9LusTaDB9I7yueabe9H56HkPM5k6aoHN66i8T3rQ0o-nPFS0lpoKEfUcHY52Q8mdFd34YNx2N2RF4cD_85zQghWwPTg8STsmnlA1Cep7qS1XMAxaxbLME"/>
+                                <img alt="Dr. Arthur Vance" className="w-24 h-24 rounded-full border-4 border-blue-100 mx-auto object-cover grayscale group-hover:grayscale-0 transition-all duration-500" src={leaderChancellorImg}/>
                                 <h4 className="text-lg font-black text-slate-900 mt-5">Dr. Arthur Vance</h4>
                                 <p className="text-blue-600 text-sm font-semibold mt-1">President &amp; Chancellor</p>
                                 <p className="text-slate-500 text-sm mt-3 line-clamp-2 leading-relaxed font-medium">Leading CSBM with over 30 years of academic experience in global management systems.</p>
@@ -330,7 +334,7 @@ export default function About() {
                                 transition={{ duration: 0.3 }}
                                 className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-blue-200 text-center transition-all group"
                             >
-                                <img alt="Leadership" className="w-24 h-24 rounded-full border-4 border-blue-100 mx-auto object-cover grayscale group-hover:grayscale-0 transition-all duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSfDUAA8U6Cc-gFNlSIKsAV54ejxZmbpivr-sPlYB5zwAwPuB0BkPdif8wwLB_25FiPWck2qHq__z89ps1fvH4aPM5Wwa0CG_C5eI-ZtJZYVKp6NWw85o1wTaEziyZGH-7haXbuNTTJ7r0lbYh-eq2Rb9IcQCz_skyWU4rs9onvV7JR4DbYnXURyMZhISNDK-IIl_DcNp4LZJ9PW74spGTlyTp3JbRVdIUXc-6IVZWGXJtA7MUz2rLZinUqqWs9rb5tekIo3beDII"/>
+                                <img alt="Dr. Elena Rodriguez" className="w-24 h-24 rounded-full border-4 border-blue-100 mx-auto object-cover grayscale group-hover:grayscale-0 transition-all duration-500" src={leaderDeanImg}/>
                                 <h4 className="text-lg font-black text-slate-900 mt-5">Dr. Elena Rodriguez</h4>
                                 <p className="text-blue-600 text-sm font-semibold mt-1">Dean of Academics</p>
                                 <p className="text-slate-500 text-sm mt-3 line-clamp-2 leading-relaxed font-medium">A pioneer in computer science education and research ethics.</p>
@@ -342,7 +346,7 @@ export default function About() {
                                 transition={{ duration: 0.3 }}
                                 className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-blue-200 text-center transition-all group"
                             >
-                                <img alt="Leadership" className="w-24 h-24 rounded-full border-4 border-blue-100 mx-auto object-cover grayscale group-hover:grayscale-0 transition-all duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZEb7dyK-5uSJ-B-JyzBmVLiaXqVVhBPawYt4FCGXFh9zjTNxuV_dgn4NSQCTITeHf94T4TkDCzzWcZnGPdXf2FY3YQEEC0Fw8nR2kEJ1hHqdmX5OfA7ZBcYxifeterh70KQ9RJ6L9iGM6Ivj46xq1dwaQLyjpQ5POtSi74AsRqguPsb-b3sz9DGUCwawVq-32jnBJFnpK2iRQjiXt13SsFjIml360FjM_gSMRcg70F-encbbogdQ3mMShG3PZ3kkQNaeCSNVRYQ8"/>
+                                <img alt="Prof. Julian Thorne" className="w-24 h-24 rounded-full border-4 border-blue-100 mx-auto object-cover grayscale group-hover:grayscale-0 transition-all duration-500" src={leaderResearchImg}/>
                                 <h4 className="text-lg font-black text-slate-900 mt-5">Prof. Julian Thorne</h4>
                                 <p className="text-blue-600 text-sm font-semibold mt-1">Director of Research</p>
                                 <p className="text-slate-500 text-sm mt-3 line-clamp-2 leading-relaxed font-medium">Driving innovation through interdisciplinary science programs and grant acquisitions.</p>
@@ -354,7 +358,7 @@ export default function About() {
                                 transition={{ duration: 0.3 }}
                                 className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-blue-200 text-center transition-all group"
                             >
-                                <img alt="Leadership" className="w-24 h-24 rounded-full border-4 border-blue-100 mx-auto object-cover grayscale group-hover:grayscale-0 transition-all duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBGWTZzCNyomTveHRWf3lPOb03S2xgWm53seO5qamDA6P-2kVNhOFlvNTum7z9UOOyaZ6XjHW0kzF06QCKWgjmiodqnpdWwBQWrkU01wSWVs1d3joA7uXQ1nAvDFVyhCzbEvqF38a-UHrO4vgoSnPxWsHTNrSas5bwqBgogpim_lbR5kGQYMQpDhwsGvtM5WvyGfG2zTYrh3VKSnb1C6lmv6OMboQj4hs0BrY5U8M4d8LvVoJy0rzv9f2VE-nxuZCqMJx7h4Aj6hVE"/>
+                                <img alt="Sarah Jenkins" className="w-24 h-24 rounded-full border-4 border-blue-100 mx-auto object-cover grayscale group-hover:grayscale-0 transition-all duration-500" src={leaderAdmissionsImg}/>
                                 <h4 className="text-lg font-black text-slate-900 mt-5">Sarah Jenkins</h4>
                                 <p className="text-blue-600 text-sm font-semibold mt-1">Head of Admissions</p>
                                 <p className="text-slate-500 text-sm mt-3 line-clamp-2 leading-relaxed font-medium">Ensuring a seamless journey for every student from application to graduation.</p>
