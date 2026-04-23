@@ -178,9 +178,21 @@ const SelectInput = ({ label, name, value, onChange, options, placeholder, error
     </div>
 );
 
-/** Drag-and-drop style file upload zone */
-const FileUpload = ({ label, stateKey, accept, formData, updateFormData, error, required }) => {
+/**
+ * Drag-and-drop style file upload zone.
+ * onFileChange(file) — called when a new file is chosen; triggers Cloudinary upload in parent.
+ * isUploading      — shows a spinner while the upload is in-flight.
+ * uploadedUrl      — once uploaded, shows a ✓ confirmed chip.
+ */
+const FileUpload = ({ label, stateKey, accept, formData, updateFormData, error, required, onFileChange, isUploading, uploadedUrl }) => {
     const file = formData[stateKey];
+
+    const handleChange = (e) => {
+        const chosen = e.target.files[0] || null;
+        updateFormData({ [stateKey]: chosen });
+        if (chosen && onFileChange) onFileChange(chosen);
+    };
+
     return (
         <div className="flex flex-col gap-1">
             <label className="text-sm font-semibold text-slate-600">
@@ -188,29 +200,59 @@ const FileUpload = ({ label, stateKey, accept, formData, updateFormData, error, 
             </label>
             <div
                 className={`relative flex items-center gap-3 border-2 border-dashed rounded-xl p-4 transition-all
-                    ${file
-                        ? 'border-blue-400 bg-blue-50'
-                        : error
-                            ? 'border-red-400 bg-red-50'
-                            : 'border-slate-200 bg-slate-50 hover:border-blue-300 hover:bg-blue-50/30'}`}
+                    ${isUploading
+                        ? 'border-blue-300 bg-blue-50/60 cursor-not-allowed'
+                        : uploadedUrl
+                            ? 'border-emerald-400 bg-emerald-50'
+                            : file
+                                ? 'border-blue-400 bg-blue-50'
+                                : error
+                                    ? 'border-red-400 bg-red-50'
+                                    : 'border-slate-200 bg-slate-50 hover:border-blue-300 hover:bg-blue-50/30'}`}
             >
-                <span className={`material-symbols-outlined ${file ? 'text-blue-500' : error ? 'text-red-400' : 'text-slate-400'}`}>
-                    {file ? 'task' : 'upload_file'}
-                </span>
+                {/* Left icon / spinner */}
+                {isUploading ? (
+                    <svg className="animate-spin h-5 w-5 text-blue-500 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                    </svg>
+                ) : (
+                    <span className={`material-symbols-outlined ${
+                        uploadedUrl ? 'text-emerald-500'
+                        : file       ? 'text-blue-500'
+                        : error      ? 'text-red-400'
+                        :              'text-slate-400'}`}>
+                        {uploadedUrl ? 'cloud_done' : file ? 'task' : 'upload_file'}
+                    </span>
+                )}
+
+                {/* Label area */}
                 <div className="flex-1 min-w-0">
-                    {file ? (
+                    {isUploading ? (
+                        <p className="text-xs font-semibold text-blue-600 animate-pulse">Uploading to cloud…</p>
+                    ) : uploadedUrl ? (
+                        <div>
+                            <p className="text-xs font-semibold text-emerald-700 truncate">{file?.name}</p>
+                            <p className="text-[10px] text-emerald-500 mt-0.5 font-medium">✓ Uploaded to Cloudinary</p>
+                        </div>
+                    ) : file ? (
                         <p className="text-xs font-semibold text-blue-700 truncate">{file.name}</p>
                     ) : (
                         <p className="text-xs text-slate-400">Click to upload &bull; {accept}</p>
                     )}
                 </div>
+
+                {/* Hidden file input */}
                 <input
                     type="file"
                     accept={accept}
-                    onChange={(e) => updateFormData({ [stateKey]: e.target.files[0] || null })}
-                    className="absolute inset-0 opacity-0 cursor-pointer"
+                    disabled={isUploading}
+                    onChange={handleChange}
+                    className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed"
                 />
-                {file && (
+
+                {/* Clear button — hidden while uploading */}
+                {file && !isUploading && (
                     <button
                         type="button"
                         onClick={(e) => { e.stopPropagation(); updateFormData({ [stateKey]: null }); }}
@@ -331,7 +373,8 @@ const Step2AcademicInfo = ({ formData, updateFormData, errors, onNext, onBack })
     </div>
 );
 
-const Step3Documents = ({ formData, updateFormData, errors, onBack, onSubmit, isSubmitting }) => (
+const Step3Documents = ({ formData, updateFormData, errors, onBack, onSubmit, isSubmitting,
+    onFileChange, uploadingFields, uploadedUrls }) => (
     <div className="space-y-6">
         <div>
             <h2 className="text-xl font-bold text-slate-800">Document Uploads</h2>
@@ -347,26 +390,49 @@ const Step3Documents = ({ formData, updateFormData, errors, onBack, onSubmit, is
             </p>
         </div>
 
+        {/* Global uploading banner */}
+        {Object.values(uploadingFields || {}).some(Boolean) && (
+            <div className="flex items-center gap-3 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3">
+                <svg className="animate-spin h-4 w-4 text-blue-500 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                </svg>
+                <p className="text-xs font-semibold text-blue-700">Uploading document to Cloudinary — please wait before submitting…</p>
+            </div>
+        )}
+
         <div className="space-y-4">
             <FileUpload
                 label="NIC / National Identity Card" stateKey="nicFile"
                 accept=".pdf,.jpg,.jpeg,.png" formData={formData} updateFormData={updateFormData}
                 error={errors.nicFile} required
+                onFileChange={(f) => onFileChange('nicFile', f)}
+                isUploading={uploadingFields?.nicFile}
+                uploadedUrl={uploadedUrls?.nicFile}
             />
             <FileUpload
                 label="Birth Certificate" stateKey="birthCertFile"
                 accept=".pdf,.jpg,.jpeg,.png" formData={formData} updateFormData={updateFormData}
                 error={errors.birthCertFile} required
+                onFileChange={(f) => onFileChange('birthCertFile', f)}
+                isUploading={uploadingFields?.birthCertFile}
+                uploadedUrl={uploadedUrls?.birthCertFile}
             />
             <FileUpload
                 label="Passport-Size Photograph" stateKey="passportPhotoFile"
                 accept=".jpg,.jpeg,.png" formData={formData} updateFormData={updateFormData}
                 error={errors.passportPhotoFile} required
+                onFileChange={(f) => onFileChange('passportPhotoFile', f)}
+                isUploading={uploadingFields?.passportPhotoFile}
+                uploadedUrl={uploadedUrls?.passportPhotoFile}
             />
             <FileUpload
                 label="Academic Transcripts (Optional — PDF only)" stateKey="transcriptFile"
                 accept=".pdf" formData={formData} updateFormData={updateFormData}
                 error={errors.transcriptFile}
+                onFileChange={(f) => onFileChange('transcriptFile', f)}
+                isUploading={uploadingFields?.transcriptFile}
+                uploadedUrl={uploadedUrls?.transcriptFile}
             />
         </div>
 
@@ -439,9 +505,15 @@ const INITIAL_FORM_DATA = {
 const ApplicationForm = () => {
     const [currentStep, setCurrentStep] = useState(1);
     const [formData, setFormData] = useState(INITIAL_FORM_DATA);
-    const [errors, setErrors] = useState({});       // field-level errors
+    const [errors, setErrors] = useState({});           // field-level errors
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [submitStatus, setSubmitStatus] = useState(null);     // 'success' | { error: string }
+    const [submitStatus, setSubmitStatus] = useState(null); // 'success' | { error: string }
+
+    // ── Cloudinary upload state ──────────────────────────────────────────────
+    // Tracks which fields are currently being uploaded (shows spinner per field)
+    const [uploadingFields, setUploadingFields] = useState({});
+    // Stores the Cloudinary secure_url for each uploaded file field
+    const [uploadedUrls, setUploadedUrls] = useState({});
 
     // ── Shared updater ──────────────────────────────────────────────────────
     const updateFormData = (fields) => {
@@ -467,42 +539,100 @@ const ApplicationForm = () => {
         setCurrentStep(s => Math.max(s - 1, 1));
     };
 
+    // ── Cloudinary unsigned upload ───────────────────────────────────────────
+    /**
+     * Uploads a single file to Cloudinary using the unsigned REST API.
+     * @param {string} fieldKey  - The formData key (e.g. 'nicFile')
+     * @param {File}   file      - The File object chosen by the user
+     */
+    const uploadToCloudinary = async (fieldKey, file) => {
+        // Mark this field as uploading
+        setUploadingFields(prev => ({ ...prev, [fieldKey]: true }));
+
+        try {
+            const data = new FormData();
+            data.append('file', file);
+            // ⚠️ Replace 'csbm_uploads' with your actual Cloudinary unsigned upload preset name
+            data.append('upload_preset', 'csbm_uploads');
+
+            // ⚠️ Replace 'dbcs7brme' with your actual Cloudinary cloud name
+            // Using /auto/upload so both images (JPG/PNG) and PDFs are accepted
+            const res = await fetch(
+                'https://api.cloudinary.com/v1_1/dbcs7brme/auto/upload',
+                { method: 'POST', body: data }
+            );
+
+            if (!res.ok) throw new Error(`Cloudinary error: ${res.status}`);
+
+            const json = await res.json();
+            const secureUrl = json.secure_url;
+
+            // Store the returned URL against the field key
+            setUploadedUrls(prev => ({ ...prev, [fieldKey]: secureUrl }));
+        } catch (err) {
+            console.error('Cloudinary upload failed:', err);
+            // Surface the error so the user knows — treat as a field error
+            setErrors(prev => ({ ...prev, [fieldKey]: 'Upload failed. Please try again.' }));
+            // Clear the file selection so they can retry
+            setFormData(prev => ({ ...prev, [fieldKey]: null }));
+        } finally {
+            setUploadingFields(prev => ({ ...prev, [fieldKey]: false }));
+        }
+    };
+
     // ── Final Submission ────────────────────────────────────────────────────
     const submitApplication = async () => {
         if (!validateStep(3)) return;
+
+        // Block submission if any file is still uploading
+        if (Object.values(uploadingFields).some(Boolean)) return;
+
+        // Guard: required documents must have been uploaded to Cloudinary
+        if (!uploadedUrls.nicFile || !uploadedUrls.birthCertFile || !uploadedUrls.passportPhotoFile) {
+            setErrors(prev => ({
+                ...prev,
+                nicFile: !uploadedUrls.nicFile ? 'Please wait for the upload to finish.' : undefined,
+                birthCertFile: !uploadedUrls.birthCertFile ? 'Please wait for the upload to finish.' : undefined,
+                passportPhotoFile: !uploadedUrls.passportPhotoFile ? 'Please wait for the upload to finish.' : undefined,
+            }));
+            return;
+        }
 
         setIsSubmitting(true);
         setSubmitStatus(null);
 
         try {
-            const submitData = new FormData();
+            // Send JSON — no raw files, only Cloudinary URLs
+            // ✅ No multer needed on the backend for this endpoint anymore
+            const payload = {
+                fullName:         formData.fullName,
+                email:            formData.email,
+                mobileNumber:     formData.mobileNumber,
+                address:          formData.address,
+                course:           formData.targetProgram,   // backend field name
+                stream:           formData.stream,
+                passes:           formData.passes,
+                qualification:    formData.qualification,
+                institution:      formData.institution,
+                gpa:              formData.gpa,
+                digitalSignature: formData.digitalSignature,
+                // Cloudinary secure URLs (strings, not File objects)
+                nicUrl:           uploadedUrls.nicFile,
+                birthCertUrl:     uploadedUrls.birthCertFile,
+                passportPhotoUrl: uploadedUrls.passportPhotoFile,
+                transcriptUrl:    uploadedUrls.transcriptFile || null,
+            };
 
-            // Text fields
-            submitData.append('fullName', formData.fullName);
-            submitData.append('email', formData.email);
-            submitData.append('mobileNumber', formData.mobileNumber);
-            submitData.append('address', formData.address);
-            submitData.append('course', formData.targetProgram); // backend key
-            submitData.append('stream', formData.stream);
-            submitData.append('passes', formData.passes);
-            submitData.append('qualification', formData.qualification);
-            submitData.append('institution', formData.institution);
-            submitData.append('gpa', formData.gpa);
-            submitData.append('digitalSignature', formData.digitalSignature);
+            await axios.post(
+                'http://localhost:8080/api/applications/submit',
+                payload,
+                { headers: { 'Content-Type': 'application/json' } }
+            );
 
-            // File fields — names must match multer's upload.fields() config
-            submitData.append('nic', formData.nicFile);
-            submitData.append('birthCert', formData.birthCertFile);
-            submitData.append('passportPhoto', formData.passportPhotoFile);
-            if (formData.transcriptFile) {
-                submitData.append('transcriptFile', formData.transcriptFile);
-            }
-
-            await axios.post('http://localhost:8080/api/applications/submit', submitData, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-            });
-
+            // Reset everything on success
             setFormData(INITIAL_FORM_DATA);
+            setUploadedUrls({});
+            setUploadingFields({});
             setErrors({});
             setCurrentStep(1);
             setSubmitStatus('success');
@@ -630,6 +760,9 @@ const ApplicationForm = () => {
                                     formData={formData} updateFormData={updateFormData}
                                     errors={errors} onBack={goBack}
                                     onSubmit={submitApplication} isSubmitting={isSubmitting}
+                                    onFileChange={uploadToCloudinary}
+                                    uploadingFields={uploadingFields}
+                                    uploadedUrls={uploadedUrls}
                                 />
                             )}
                         </div>

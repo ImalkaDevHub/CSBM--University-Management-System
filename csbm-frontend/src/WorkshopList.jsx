@@ -35,7 +35,8 @@ const WorkshopList = () => {
           const appRes = await fetch('/api/applications/my-application', { headers });
           if (appRes.ok) {
             const appData = await appRes.json();
-            setIsApproved(appData.status === 'approved' || appData.status === 'APPROVED');
+            // appData is null when student hasn't applied yet (200 with null body)
+            setIsApproved(appData && (appData.status === 'approved' || appData.status === 'APPROVED'));
           }
         } catch {
           setIsApproved(false);

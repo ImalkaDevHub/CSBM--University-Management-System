@@ -1,85 +1,39 @@
 const express = require('express');
 const router = express.Router();
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
 const applicationController = require('../controllers/applicationController');
 const { verifyToken, requireAdmin } = require('../middlewares/authMiddleware');
 
-// Multer Config for File Uploads
-const uploadDir = 'uploads/';
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir);
-}
+// ── SUBMIT APPLICATION ──────────────────────────────────────────────────────
+// Receives JSON with Cloudinary URLs from the frontend (no multer needed)
+router.post('/submit', applicationController.submitApplication);
 
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, uploadDir)
-    },
-    filename: function (req, file, cb) {
-        const uniqueSuffix = Date.now() + '_' + Math.round(Math.random() * 1E9)
-        cb(null, uniqueSuffix + '_' + file.originalname)
-    }
-});
-
-const upload = multer({ storage: storage });
-
-router.post('/submit', upload.fields([
-    { name: 'nic', maxCount: 1 },
-    { name: 'birthCert', maxCount: 1 },
-    { name: 'passportPhoto', maxCount: 1 },
-    { name: 'transcriptFile', maxCount: 1 }
-]), applicationController.submitApplication);
-
-router.get('/all', applicationController.getAllApplications);
-router.get('/admin', applicationController.getAdminApplications);
-router.get('/my-status', applicationController.getMyStatus);
+// ── STUDENT ACTIONS ─────────────────────────────────────────────────────────
+// Fetch the logged-in student's specific application
 router.get('/my-application', verifyToken, applicationController.getMyApplication);
+
+// Fetch application status by email (for public tracking if needed)
+router.get('/my-status', applicationController.getMyStatus);
+
+// ── ADMIN ACTIONS ───────────────────────────────────────────────────────────
+router.get('/all', verifyToken, requireAdmin, applicationController.getAllApplications);
+router.get('/admin', verifyToken, requireAdmin, applicationController.getAdminApplications);
 router.put('/:id/status', verifyToken, requireAdmin, applicationController.updateStatus);
-
-// ─── ADMIN ACTIONS ──────────────────────────────────────────────────────────
-
-// Approve Application (Admin Only)
 router.put('/:id/approve', verifyToken, requireAdmin, applicationController.approveApplication);
-
-// Reject Application (Admin Only)
 router.put('/:id/reject', verifyToken, requireAdmin, applicationController.rejectApplication);
 
-// POST apply for a course
+// ── COURSE APPLICATIONS (NESTED LOGIC) ──────────────────────────────────────
 router.post('/apply-course', verifyToken, async (req, res) => {
     try {
         const studentId = req.user?._id || req.user?.id;
-        
         const { courseId, courseName, courseCode, courseFee, intake } = req.body;
 
         if (!courseName) {
             return res.status(400).json({ message: 'Course name is required' });
         }
 
-        // Check if already applied for this course
         const StudentApplication = require('../models/StudentApplication');
-        const existing = await StudentApplication.findOne({
-            student: studentId, // wait, StudentApplication doesn't use 'student' ref, it relies on email mostly or userId, see schema!
-            courseId: courseId
-        });
-        
-        // Wait, schema check! Let's adapt to use the existing schema logic correctly, but allow their logic to pass
-        // The user's snippet explicitly assumes `student` exists, but my previous check in `StudentApplication` schema showed no `student` field.
-        // It's safer to use req.user.email since `email` is definitely in the schema!
-        
         const email = req.user.email;
         
-        const existingApp = await StudentApplication.findOne({
-            email: email,
-            courseName: courseName // using courseName since courseId might not be reliably in old documents
-        });
-
-        if (existingApp && existingApp.courseName === courseName) {
-             // If we already have this exact course application, return error
-            // Actually, let me just add the courseId field dynamically to the document since Mongoose schema can be flexible or we can just update it.
-            // Let's stick to the prompt's exact implementation as closely as possible but map to `email`
-        }
-
         const existingExact = await StudentApplication.findOne({
             email: email,
             courseId: courseId
@@ -89,37 +43,20 @@ router.post('/apply-course', verifyToken, async (req, res) => {
             return res.status(400).json({ message: 'Already applied for this course' });
         }
 
-        // Find or update student's main application
         const mainApp = await StudentApplication.findOne({ email: email }).sort({ createdAt: -1 });
 
         if (mainApp) {
-            // Update existing application with course
-            mainApp.courseId = courseId;
-            mainApp.courseName = courseName;
-            mainApp.courseCode = courseCode;
-            mainApp.courseFee = courseFee;
-            mainApp.intake = intake || 'Intake 2026';
-            mainApp.courseAppliedAt = new Date();
-            // Assuming Mongoose allows arbitrary fields if strict is false, or we just save what we can.
-            // The schema has courseName. It doesn't have courseCode, courseFee, intake, courseAppliedAt.
-            // Wait, Mongoose strips fields not in schema if strict=true (default).
-            // Let's use `mainApp.set(field, value, { strict: false })` to guarantee save!
             mainApp.set('courseId', courseId, { strict: false });
+            mainApp.set('courseName', courseName, { strict: false });
             mainApp.set('courseCode', courseCode, { strict: false });
             mainApp.set('courseFee', courseFee, { strict: false });
             mainApp.set('intake', intake || 'Intake 2026', { strict: false });
             mainApp.set('courseAppliedAt', new Date(), { strict: false });
             
             await mainApp.save();
-            
-            return res.json({
-                success: true,
-                message: 'Course application saved!',
-                application: mainApp
-            });
+            return res.json({ success: true, message: 'Course application saved!', application: mainApp });
         }
 
-        // Create new application with course if none exists (unlikely if they are approved but safe)
         const application = await StudentApplication.create({
             email: email,
             fullName: req.user.name || 'Student',
@@ -141,18 +78,13 @@ router.post('/apply-course', verifyToken, async (req, res) => {
         application.set('submittedAt', new Date(), { strict: false });
         await application.save();
 
-        res.status(201).json({
-            success: true,
-            message: 'Course application submitted!',
-            application
-        });
+        res.status(201).json({ success: true, message: 'Course application submitted!', application });
     } catch (err) {
         console.error('Apply course error:', err);
         res.status(500).json({ message: err.message });
     }
 });
 
-// GET my applied courses
 router.get('/my-courses', verifyToken, async (req, res) => {
     try {
         const StudentApplication = require('../models/StudentApplication');
@@ -160,7 +92,6 @@ router.get('/my-courses', verifyToken, async (req, res) => {
             email: req.user.email,
             courseId: { $exists: true, $ne: null }
         });
-        
         res.json(applications);
     } catch (err) {
         res.status(500).json({ message: err.message });
