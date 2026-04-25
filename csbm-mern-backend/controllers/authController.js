@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'csbm_super_secret_key_12345';
 
@@ -11,26 +12,34 @@ const authController = {
 
             const user = await User.findOne({ email });
 
-            if (user && user.password === password) {
-                // In production use bcrypt for password comparison
+            if (user) {
+                // Check if password matches (either plain text or hashed)
+                const isMatch = user.password === password || await bcrypt.compare(password, user.password).catch(() => false);
+                
+                if (isMatch) {
+                    // Sign JWT Template
+                    const token = jwt.sign(
+                        { id: user._id, role: user.role || 'STUDENT' },
+                        JWT_SECRET,
+                        { expiresIn: '7d' }
+                    );
 
-                // Sign JWT Template
-                const token = jwt.sign(
-                    { id: user._id, role: user.role, email: user.email },
-                    JWT_SECRET,
-                    { expiresIn: '1d' } // Token valid for 1 day
-                );
-
-                return res.status(200).json({
-                    status: "success",
-                    role: user.role,
-                    name: user.fullName,
-                    token: token // Send token back in the response
-                });
+                    return res.status(200).json({
+                        status: "success",
+                        token: token,
+                        user: {
+                            id: user._id,
+                            name: user.fullName,
+                            email: user.email,
+                            role: user.role || 'STUDENT'
+                        }
+                    });
+                }
             }
 
             res.status(401).json({ status: "error", message: "Invalid credentials" });
         } catch (error) {
+            console.error('Login Error:', error);
             res.status(500).json({ status: "error", message: "Login failed", details: error.message });
         }
     },
@@ -38,7 +47,7 @@ const authController = {
     // POST /api/auth/google
     googleLogin: async (req, res) => {
         try {
-            const { email, name, photoURL, role, uid } = req.body;
+            const { email, name, photoURL, uid } = req.body;
 
             // Find or create user
             let user = await User.findOne({ email });
@@ -48,9 +57,10 @@ const authController = {
                 user = new User({
                     email,
                     fullName: name,
-                    role: role || 'STUDENT',
-                    firebaseUid: uid,
+                    role: 'STUDENT',
+                    firebaseUid: uid, // storing uid as firebaseUid
                     avatar: photoURL,
+                    mobileNumber: '',
                     // For social logins, password can be a random string or empty if model allows
                     password: `google_${uid.substring(0, 8)}` 
                 });
@@ -59,16 +69,20 @@ const authController = {
 
             // Sign JWT
             const token = jwt.sign(
-                { id: user._id, role: user.role, email: user.email },
+                { id: user._id, role: user.role || 'STUDENT', email: user.email },
                 JWT_SECRET,
-                { expiresIn: '1d' }
+                { expiresIn: '7d' }
             );
 
             res.status(200).json({
                 status: "success",
-                role: user.role,
-                name: user.fullName,
-                token: token
+                token: token,
+                user: {
+                    id: user._id,
+                    name: user.fullName,
+                    email: user.email,
+                    role: user.role || 'STUDENT'
+                }
             });
         } catch (error) {
             console.error('Backend Google Login Error:', error);

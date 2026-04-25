@@ -36,8 +36,7 @@ const userSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        required: true,
-        enum: ['ADMIN', 'STUDENT', 'LECTURER'],
+        required: false,
         default: 'STUDENT',
     },
     firebaseUid: {

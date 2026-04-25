@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import axios from 'axios';
+import SignatureCanvas from 'react-signature-canvas';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // VALIDATION RULES
@@ -85,15 +86,8 @@ const VALIDATORS = {
         if (f.type !== 'application/pdf') return 'Transcript must be a PDF file.';
         return null;
     },
-    digitalSignature: (v, formData) => {
-        if (!v?.trim()) return 'Digital signature is required.';
-        if (v.trim().length < 3) return 'Signature must be at least 3 characters.';
-        if (
-            formData?.fullName?.trim() &&
-            v.trim().toLowerCase() !== formData.fullName.trim().toLowerCase()
-        ) {
-            return `Signature must match your full name exactly: "${formData.fullName.trim()}".`;
-        }
+    digitalSignature: (v) => {
+        if (!v) return 'Digital signature is required. Please sign in the pad below.';
         return null;
     },
 };
@@ -374,7 +368,7 @@ const Step2AcademicInfo = ({ formData, updateFormData, errors, onNext, onBack })
 );
 
 const Step3Documents = ({ formData, updateFormData, errors, onBack, onSubmit, isSubmitting,
-    onFileChange, uploadingFields, uploadedUrls }) => (
+    onFileChange, uploadingFields, uploadedUrls, sigCanvas }) => (
     <div className="space-y-6">
         <div>
             <h2 className="text-xl font-bold text-slate-800">Document Uploads</h2>
@@ -386,7 +380,7 @@ const Step3Documents = ({ formData, updateFormData, errors, onBack, onSubmit, is
             <span className="material-symbols-outlined shrink-0 text-blue-500 mt-0.5">info</span>
             <p className="text-xs leading-relaxed">
                 Accepted formats: <strong>PDF, JPG, PNG</strong>. Passport photo must be <strong>JPG/PNG ≤ 2 MB</strong>.
-                Your digital signature <strong>must match your full name exactly</strong> as entered in Step 1.
+                Please <strong>provide your signature</strong> in the interactive pad below to confirm your application.
             </p>
         </div>
 
@@ -436,23 +430,44 @@ const Step3Documents = ({ formData, updateFormData, errors, onBack, onSubmit, is
             />
         </div>
 
-        {/* Digital Signature */}
-        <div className="flex flex-col gap-1">
+        {/* Digital Signature Canvas */}
+        <div className="flex flex-col gap-2">
             <label className="text-sm font-semibold text-slate-600">
                 Digital Signature <span className="text-red-500">*</span>
-                <span className="ml-2 text-xs font-normal text-slate-400">(Type your full name to confirm)</span>
+                <span className="ml-2 text-xs font-normal text-slate-400">(Sign in the pad below)</span>
             </label>
-            <input
-                type="text"
-                value={formData.digitalSignature || ''}
-                onChange={(e) => updateFormData({ digitalSignature: e.target.value })}
-                placeholder={`Type: "${formData.fullName || 'Your Full Name'}"`}
-                className={`h-11 px-4 rounded-lg border text-slate-900 text-sm italic transition-all
-                    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                    placeholder:text-slate-400
-                    ${errors.digitalSignature ? 'border-red-400 bg-red-50' : 'border-slate-200 bg-slate-50'}`}
-            />
-            <FieldError msg={errors.digitalSignature} />
+            
+            <div className={`border-2 rounded-xl bg-white overflow-hidden transition-all
+                ${errors.digitalSignature ? 'border-red-400 ring-4 ring-red-50' : 'border-slate-200'}`}>
+                <SignatureCanvas
+                    ref={sigCanvas}
+                    penColor="black"
+                    canvasProps={{
+                        className: 'signature-canvas w-full h-40 cursor-crosshair'
+                    }}
+                    onEnd={() => {
+                        // Mark as signed in local state to pass existence validation
+                        if (!sigCanvas.current.isEmpty()) {
+                            updateFormData({ digitalSignature: 'SIGNED' });
+                        }
+                    }}
+                />
+            </div>
+            
+            <div className="flex justify-between items-center">
+                <FieldError msg={errors.digitalSignature} />
+                <button
+                    type="button"
+                    onClick={() => {
+                        sigCanvas.current.clear();
+                        updateFormData({ digitalSignature: '' });
+                    }}
+                    className="text-[10px] uppercase tracking-wider font-bold text-slate-400 hover:text-[#135bec] transition-colors flex items-center gap-1"
+                >
+                    <span className="material-symbols-outlined text-sm">refresh</span>
+                    Clear Signature
+                </button>
+            </div>
         </div>
 
         <div className="flex justify-between pt-2">
@@ -507,6 +522,7 @@ const ApplicationForm = () => {
     const [formData, setFormData] = useState(INITIAL_FORM_DATA);
     const [errors, setErrors] = useState({});           // field-level errors
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const sigCanvas = useRef(null);
     const [submitStatus, setSubmitStatus] = useState(null); // 'success' | { error: string }
 
     // ── Cloudinary upload state ──────────────────────────────────────────────
@@ -582,6 +598,12 @@ const ApplicationForm = () => {
 
     // ── Final Submission ────────────────────────────────────────────────────
     const submitApplication = async () => {
+        // 1. Check canvas emptiness first
+        if (sigCanvas.current && sigCanvas.current.isEmpty()) {
+            setErrors(prev => ({ ...prev, digitalSignature: 'Please provide your signature before submitting.' }));
+            return;
+        }
+
         if (!validateStep(3)) return;
 
         // Block submission if any file is still uploading
@@ -615,7 +637,8 @@ const ApplicationForm = () => {
                 qualification:    formData.qualification,
                 institution:      formData.institution,
                 gpa:              formData.gpa,
-                digitalSignature: formData.digitalSignature,
+                // Fixed: use getCanvas() instead of getTrimmedCanvas() to avoid crashing on 'trim-canvas' dependency
+                digitalSignature: sigCanvas.current.getCanvas().toDataURL('image/png'),
                 // Cloudinary secure URLs (strings, not File objects)
                 nicUrl:           uploadedUrls.nicFile,
                 birthCertUrl:     uploadedUrls.birthCertFile,
@@ -763,6 +786,7 @@ const ApplicationForm = () => {
                                     onFileChange={uploadToCloudinary}
                                     uploadingFields={uploadingFields}
                                     uploadedUrls={uploadedUrls}
+                                    sigCanvas={sigCanvas}
                                 />
                             )}
                         </div>

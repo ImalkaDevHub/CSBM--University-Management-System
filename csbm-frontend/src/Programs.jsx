@@ -219,9 +219,6 @@ export default function Programs() {
                                 <button className="bg-blue-600 text-white rounded-lg px-8 py-4 font-bold text-lg hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20">
                                     View Prospectus <span className="text-xl leading-none align-middle ml-1">↓</span>
                                 </button>
-                                <button className="bg-white/20 backdrop-blur-md text-white border border-white/30 rounded-lg px-8 py-4 font-semibold text-lg hover:bg-white/30 transition-all">
-                                    Virtual Tour
-                                </button>
                             </motion.div>
                         </div>
                     </motion.div>
