@@ -100,9 +100,6 @@ export default function StudentLife() {
                             
                             <motion.div variants={fadeInUp} className="mt-8 sm:mt-10 flex flex-col sm:flex-row gap-4 justify-center sm:justify-start">
                                 <button className="bg-blue-600 text-white rounded-lg px-8 py-4 font-bold text-lg hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20">
-                                    Virtual Tour <span className="text-xl leading-none align-middle ml-1">→</span>
-                                </button>
-                                <button className="bg-white/20 backdrop-blur-md text-white border border-white/30 rounded-lg px-8 py-4 font-semibold text-lg hover:bg-white/30 transition-all">
                                     Join a Club
                                 </button>
                             </motion.div>

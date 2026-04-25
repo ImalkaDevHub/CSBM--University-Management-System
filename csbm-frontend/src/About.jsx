@@ -135,11 +135,6 @@ export default function About() {
                                         Explore Programs
                                     </Link>
                                 </motion.div>
-                                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} transition={{ duration: 0.2 }}>
-                                    <button className="bg-white/20 backdrop-blur text-white border border-white/30 rounded-lg px-8 py-4 font-semibold hover:bg-white/30 transition-all">
-                                        Virtual Tour
-                                    </button>
-                                </motion.div>
                             </motion.div>
                         </div>
                     </div>
