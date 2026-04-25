@@ -208,12 +208,12 @@ function App() {
           <Route path="/" element={<MainLayout />}>
 
             {/* Student Routes */}
-            <Route element={<ProtectedRoute allowedRoles={['STUDENT', 'ADMIN', 'LECTURER']} />}>
+            <Route element={<ProtectedRoute allowedRoles={['student', 'admin', 'lecturer', 'super_admin']} />}>
               <Route path="apply" element={<ApplicationForm />} />
             </Route>
 
             {/* Legacy Admin Routes inside old sidebar */}
-            <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
+            <Route element={<ProtectedRoute allowedRoles={['admin', 'super_admin']} />}>
               <Route path="admin" element={<Navigate to="/admin-dashboard" replace />} />
               <Route path="intakes" element={<ConfigProvider theme={{ algorithm: theme.defaultAlgorithm }}><IntakeScheduler /></ConfigProvider>} />
               <Route path="manual-entry" element={<ConfigProvider theme={{ algorithm: theme.defaultAlgorithm }}><ManualEntry /></ConfigProvider>} />
@@ -228,7 +228,7 @@ function App() {
           <Route
             path="/student-dashboard"
             element={
-              <ProtectedRoute allowedRoles={['STUDENT', 'ADMIN', 'LECTURER']}>
+              <ProtectedRoute allowedRoles={['student', 'admin', 'lecturer', 'super_admin']}>
                 <StudentDashboard />
               </ProtectedRoute>
             }

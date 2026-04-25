@@ -1353,7 +1353,7 @@ const ManageWorkshopsPage = () => {
 
           <Row gutter={24}>
             <Col span={8}>
-              <Form.Item name="date" label="Event Date" rules={[{ required: true }]}><DatePicker className="w-full" /></Form.Item>
+              <Form.Item name="date" label="Event Date" rules={[{ required: true }]}><DatePicker className="w-full" disabledDate={(current) => current && current < dayjs().startOf('day')} /></Form.Item>
             </Col>
             <Col span={8}>
               <Form.Item name="time" label="Start Time" rules={[{ required: true }]}><TimePicker className="w-full" format="HH:mm" /></Form.Item>
@@ -1368,10 +1368,28 @@ const ManageWorkshopsPage = () => {
               <Form.Item name="venue" label="Venue" rules={[{ required: true }]}><Input placeholder="Seminar Hall A" /></Form.Item>
             </Col>
             <Col span={8}>
-              <Form.Item name="capacity" label="Max Capacity" rules={[{ required: true }]}><Input type="number" placeholder="50" /></Form.Item>
+              <Form.Item 
+                name="capacity" 
+                label="Max Capacity" 
+                rules={[
+                  { required: true, message: 'Required' },
+                  { 
+                    validator: (_, value) => {
+                      if (value !== undefined && value !== null && value <= 0) {
+                        return Promise.reject(new Error('Must be > 0'));
+                      }
+                      return Promise.resolve();
+                    }
+                  }
+                ]}
+              >
+                <Input type="number" placeholder="50" min={1} className="w-full" />
+              </Form.Item>
             </Col>
             <Col span={8}>
-              <Form.Item name="price" label="Starting Price (LKR)" initialValue={0}><Input type="number" placeholder="0.00" prefix="Rs." /></Form.Item>
+              <Form.Item name="price" label="Starting Price (LKR)" initialValue={0}>
+                <Input type="number" placeholder="0.00" prefix="Rs." min={0} className="w-full" />
+              </Form.Item>
             </Col>
           </Row>
 
