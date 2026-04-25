@@ -1,14 +1,15 @@
 const express = require('express');
 const router = express.Router();
-const { verifyToken, requireAdmin } = require('../middlewares/authMiddleware');
+const { verifyToken } = require('../middlewares/authMiddleware');
+const authorize = require('../middlewares/authorize');
 const User = require('../models/User');
 const Course = require('../models/Course');
 const Workshop = require('../models/Workshop');
 const WorkshopRegistration = require('../models/WorkshopRegistration');
 const StudentApplication = require('../models/StudentApplication');
 
-// All admin routes require both verifyToken and requireAdmin
-const protect = [verifyToken, requireAdmin];
+// All admin routes require both verifyToken and authorize('super_admin')
+const protect = [verifyToken, authorize(['super_admin'])];
 
 // GET /api/admin/stats/students
 router.get('/stats/students', protect, async (req, res) => {
@@ -114,7 +115,7 @@ router.get('/workshops/recent-registrations', protect, async (req, res) => {
 const bcrypt = require('bcryptjs');
 
 // POST /api/admin/register-student
-router.post('/register-student', protect, async (req, res) => {
+router.post('/register-student', verifyToken, authorize(['registration_staff']), async (req, res) => {
     try {
         const { 
             name, email, phone, address, nic,

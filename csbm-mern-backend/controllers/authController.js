@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'csbm_super_secret_key_12345';
 
@@ -11,26 +12,29 @@ const authController = {
 
             const user = await User.findOne({ email });
 
-            if (user && user.password === password) {
-                // In production use bcrypt for password comparison
-
+            if (user && await bcrypt.compare(password, user.password)) {
                 // Sign JWT Template
                 const token = jwt.sign(
-                    { id: user._id, role: user.role, email: user.email },
+                    { id: user._id, role: user.role || 'super_admin' },
                     JWT_SECRET,
-                    { expiresIn: '1d' } // Token valid for 1 day
+                    { expiresIn: '7d' }
                 );
 
                 return res.status(200).json({
                     status: "success",
-                    role: user.role,
-                    name: user.fullName,
-                    token: token // Send token back in the response
+                    token: token,
+                    user: {
+                        id: user._id,
+                        name: user.fullName,
+                        email: user.email,
+                        role: user.role || 'super_admin'
+                    }
                 });
             }
 
             res.status(401).json({ status: "error", message: "Invalid credentials" });
         } catch (error) {
+            console.error('Login Error:', error);
             res.status(500).json({ status: "error", message: "Login failed", details: error.message });
         }
     },

@@ -3,14 +3,11 @@ const mongoose = require('mongoose');
 const Workshop = require('../models/Workshop');
 const WorkshopRegistration = require('../models/WorkshopRegistration');
 const { verifyToken: protect } = require('../middlewares/authMiddleware');
+const authorize = require('../middlewares/authorize');
 
 const router = express.Router();
 
-// Helper to check admin
-const isAdmin = (req) => {
-    const role = req.user?.role || '';
-    return role.toLowerCase() === 'admin';
-};
+
 
 // GET all workshops
 router.get('/', protect, async (req, res) => {
@@ -100,11 +97,8 @@ router.post('/register', protect, async (req, res) => {
 });
 
 // POST create workshop (admin only)
-router.post('/', protect, async (req, res) => {
+router.post('/', protect, authorize(['marketing_coordinator']), async (req, res) => {
     try {
-        if (!isAdmin(req)) {
-            return res.status(403).json({ message: 'Admin access required' });
-        }
 
         const {
             title, topic, speaker, date,
@@ -137,11 +131,8 @@ router.post('/', protect, async (req, res) => {
 });
 
 // DELETE workshop (admin only)
-router.delete('/:id', protect, async (req, res) => {
+router.delete('/:id', protect, authorize(['marketing_coordinator']), async (req, res) => {
     try {
-        if (!isAdmin(req)) {
-            return res.status(403).json({ message: 'Admin access required' });
-        }
         await Workshop.findByIdAndDelete(req.params.id);
         res.json({ message: 'Workshop deleted' });
     } catch (err) {

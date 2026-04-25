@@ -72,6 +72,26 @@ const authMiddleware = {
     // Alias verifyToken to protect as requested
     protect: async (req, res, next) => {
         return authMiddleware.verifyToken(req, res, next);
+    },
+
+    // 3. New RBAC Authorization Middleware
+    authorize: (roles = []) => {
+        return (req, res, next) => {
+            if (!req.user) {
+                return res.status(401).json({ status: "error", message: "Authentication required." });
+            }
+
+            // super_admin or legacy ADMIN bypasses all checks
+            if (req.user.role === 'super_admin' || req.user.role === 'ADMIN') {
+                return next();
+            }
+
+            if (roles.length && !roles.includes(req.user.role)) {
+                return res.status(403).json({ status: "error", message: "Access Denied. Insufficient permissions." });
+            }
+
+            next();
+        };
     }
 };
 

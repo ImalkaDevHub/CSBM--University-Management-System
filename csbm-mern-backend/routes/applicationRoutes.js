@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const applicationController = require('../controllers/applicationController');
-const { verifyToken, requireAdmin } = require('../middlewares/authMiddleware');
+const { verifyToken } = require('../middlewares/authMiddleware');
+const authorize = require('../middlewares/authorize');
 
 // ── SUBMIT APPLICATION ──────────────────────────────────────────────────────
 // Receives JSON with Cloudinary URLs from the frontend (no multer needed)
@@ -15,11 +16,11 @@ router.get('/my-application', verifyToken, applicationController.getMyApplicatio
 router.get('/my-status', applicationController.getMyStatus);
 
 // ── ADMIN ACTIONS ───────────────────────────────────────────────────────────
-router.get('/all', verifyToken, requireAdmin, applicationController.getAllApplications);
-router.get('/admin', verifyToken, requireAdmin, applicationController.getAdminApplications);
-router.put('/:id/status', verifyToken, requireAdmin, applicationController.updateStatus);
-router.put('/:id/approve', verifyToken, requireAdmin, applicationController.approveApplication);
-router.put('/:id/reject', verifyToken, requireAdmin, applicationController.rejectApplication);
+router.get('/all', verifyToken, authorize(['registration_staff']), applicationController.getAllApplications);
+router.get('/admin', verifyToken, authorize(['registration_staff']), applicationController.getAdminApplications);
+router.put('/:id/status', verifyToken, authorize(['registration_staff']), applicationController.updateStatus);
+router.put('/:id/approve', verifyToken, authorize(['registration_staff']), applicationController.approveApplication);
+router.put('/:id/reject', verifyToken, authorize(['registration_staff']), applicationController.rejectApplication);
 
 // ── COURSE APPLICATIONS (NESTED LOGIC) ──────────────────────────────────────
 router.post('/apply-course', verifyToken, async (req, res) => {

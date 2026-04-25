@@ -3,13 +3,14 @@ const router = express.Router();
 const courseController = require('../controllers/courseController');
 const StudentApplication = require('../models/StudentApplication');
 const { verifyToken } = require('../middlewares/authMiddleware');
+const authorize = require('../middlewares/authorize');
 
 // 🚀 TRACKER 1: Prove the file is loading
 console.log("----------------------------------------");
 console.log("🚀 BOOT SEQUENCE: courseRoutes.js is loading!");
 
 // Define routes
-router.post('/', courseController.addCourse);
+router.post('/', verifyToken, authorize(['marketing_coordinator']), courseController.addCourse);
 router.get('/', courseController.listCourses);
 router.get('/all', courseController.listCourses);
 
@@ -45,6 +46,6 @@ router.get('/enrolled', verifyToken, async (req, res) => {
     }
 });
 
-router.put('/:id', courseController.updateCourse);
+router.put('/:id', verifyToken, authorize(['marketing_coordinator']), courseController.updateCourse);
 
 module.exports = router;

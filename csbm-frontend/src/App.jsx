@@ -36,6 +36,7 @@ import WorkshopList from './WorkshopList';
 import AdminWorkshopManager from './AdminWorkshopManager';
 import AnalyticsDashboard from './AnalyticsDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
+import Unauthorized from './Unauthorized';
 import { Navigate } from 'react-router-dom';
 
 // PAYMENT UI ROUTES
@@ -237,13 +238,15 @@ function App() {
           <Route
             path="/admin-dashboard/*"
             element={
-              <ProtectedRoute allowedRoles={['ADMIN']}>
+              <ProtectedRoute allowedRoles={['admin', 'super_admin', 'registration_staff', 'marketing_coordinator', 'finance_staff']}>
                 <ConfigProvider theme={{ algorithm: theme.defaultAlgorithm }}>
                   <AdminDashboard />
                 </ConfigProvider>
               </ProtectedRoute>
             }
           />
+
+          <Route path="/unauthorized" element={<ConfigProvider theme={{ algorithm: theme.defaultAlgorithm }}><Unauthorized /></ConfigProvider>} />
 
           {/* PAYMENT FUNNEL ROUTES */}
           <Route path="/payment/summary" element={<PaymentSummary />} />
@@ -253,6 +256,9 @@ function App() {
 
           {/* /admissions alias */}
           <Route path="/admissions" element={<ApplicationForm />} />
+
+          <Route path="*" element={<Navigate to="/" replace />} />
+
 
         </Routes>
       </BrowserRouter>

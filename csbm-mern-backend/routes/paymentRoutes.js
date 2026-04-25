@@ -3,6 +3,7 @@ const crypto = require('crypto');
 const Payment = require('../models/Payment.js');
 const User = require('../models/User.js');
 const { protect } = require('../middlewares/authMiddleware.js');
+const authorize = require('../middlewares/authorize');
 
 const router = express.Router();
 
@@ -24,11 +25,7 @@ const generateHash = (merchantId, orderId, amount, currency, secret) => {
     .toUpperCase();
 };
 
-// Admin only check
-const isAdminCheck = (req) => {
-  const role = req.user?.role || '';
-  return role.toLowerCase() === 'admin';
-};
+
 
 // POST /api/payments/initiate
 router.post('/initiate', protect, async (req, res) => {
@@ -197,11 +194,8 @@ router.get('/check/:orderId', protect, async (req, res) => {
 
 // GET /api/payments/admin/all
 // Admin - get all payments
-router.get('/admin/all', protect, async (req, res) => {
+router.get('/admin/all', protect, authorize(['finance_staff']), async (req, res) => {
   try {
-    if (!isAdminCheck(req)) {
-      return res.status(403).json({ message: 'Admin access required' });
-    }
 
     const payments = await Payment.find({}).populate('student', 'name email').sort({ createdAt: -1 });
     res.json(payments);
@@ -212,11 +206,8 @@ router.get('/admin/all', protect, async (req, res) => {
 
 // GET /api/payments/admin/stats
 // Admin - revenue statistics
-router.get('/admin/stats', protect, async (req, res) => {
+router.get('/admin/stats', protect, authorize(['finance_staff']), async (req, res) => {
   try {
-    if (!isAdminCheck(req)) {
-      return res.status(403).json({ message: 'Admin access required' });
-    }
 
     const totalRevenue = await Payment.aggregate([
       { $match: { status: 'completed' } },
@@ -264,11 +255,8 @@ router.get('/admin/stats', protect, async (req, res) => {
 });
 
 // PUT /api/payments/admin/refund/:id
-router.put('/admin/refund/:id', protect, async (req, res) => {
+router.put('/admin/refund/:id', protect, authorize(['finance_staff']), async (req, res) => {
   try {
-    if (!isAdminCheck(req)) {
-      return res.status(403).json({ message: 'Admin access required' });
-    }
 
     const payment = await Payment.findByIdAndUpdate(
       req.params.id,

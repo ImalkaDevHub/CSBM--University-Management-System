@@ -4,8 +4,15 @@ const userController = require('../controllers/userController');
 const User = require('../models/User');
 const { verifyToken } = require('../middlewares/authMiddleware');
 
+const authorize = require('../middlewares/authorize');
+
 router.post('/register', userController.registerUser);
 router.get('/all', userController.listUsers);
+
+// Staff Management (Super Admin only)
+router.get('/staff', verifyToken, authorize(['super_admin']), userController.getStaff);
+router.post('/staff', verifyToken, authorize(['super_admin']), userController.createStaff);
+router.delete('/staff/:id', verifyToken, authorize(['super_admin']), userController.deleteStaff);
 
 // GET /api/users/profile (auth required)
 router.get('/profile', verifyToken, async (req, res) => {

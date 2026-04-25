@@ -104,23 +104,25 @@ export default function Login() {
                     return;
                 }
 
-                const role = (response.data.user?.role || response.data.role || '').toUpperCase();
+                const userData = response.data.user || {};
+                const role = (userData.role || response.data.role || '').toLowerCase();
                 
                 // Save user data to localStorage
                 localStorage.setItem('token', response.data.token);
                 localStorage.setItem('userRole', role);
-                localStorage.setItem('userName', response.data.user?.name || response.data.name || '');
-                // Store full user object for dashboards
-                localStorage.setItem('user', JSON.stringify(response.data.user || response.data));
+                localStorage.setItem('userName', userData.name || response.data.name || '');
+                localStorage.setItem('user', JSON.stringify(userData));
 
                 // Show success message
-                message.success(`Welcome back, ${response.data.user?.name || response.data.name}!`);
+                message.success(`Welcome back, ${userData.name || response.data.name}!`);
 
                 // Redirect based on role
-                if (role === 'ADMIN') {
+                if (['super_admin', 'registration_staff', 'marketing_coordinator', 'finance_staff', 'admin'].includes(role)) {
                     navigate('/admin-dashboard');
-                } else {
+                } else if (role === 'student') {
                     navigate('/student-dashboard');
+                } else {
+                    navigate('/');
                 }
             } else {
                 message.error('Invalid credentials. Please try again.');

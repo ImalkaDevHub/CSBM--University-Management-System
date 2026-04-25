@@ -23,7 +23,12 @@ const notificationRoutes = require('./routes/notificationRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 
 // Connect to database
-connectDB();
+connectDB().then(async () => {
+    const User = require('./models/User');
+    // One-time migration — safe to remove after first run
+    await User.updateMany({ role: { $exists: false } }, { $set: { role: 'super_admin' } });
+    console.log('Migration: Patched users with missing roles.');
+});
 
 const app = express();
 

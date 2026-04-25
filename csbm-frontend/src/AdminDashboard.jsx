@@ -1465,7 +1465,137 @@ const ManageWorkshopsPage = () => {
   );
 };
 
-const UserManagementPage = () => <ComingSoon title="User Management" subtitle="Manage all system users and roles." />;
+const UserManagementPage = () => {
+  const [staff, setStaff] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [form] = Form.useForm();
+  const { message: messageApi } = App.useApp();
+
+  const fetchStaff = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get('/api/users/staff', { headers: authHeaders() });
+      setStaff(res.data);
+    } catch (err) {
+      messageApi.error("Failed to load staff users");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStaff();
+  }, []);
+
+  const handleCreate = async (values) => {
+    try {
+      await axios.post('/api/users/staff', values, { headers: authHeaders() });
+      messageApi.success("Staff user created successfully");
+      setIsModalOpen(false);
+      form.resetFields();
+      fetchStaff();
+    } catch (err) {
+      messageApi.error(err.response?.data?.error || "Failed to create staff");
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`/api/users/staff/${id}`, { headers: authHeaders() });
+      messageApi.success("Staff user deleted");
+      fetchStaff();
+    } catch (err) {
+      messageApi.error("Failed to delete staff");
+    }
+  };
+
+  const columns = [
+    {
+      title: 'Name',
+      dataIndex: 'fullName',
+      key: 'fullName',
+      render: (text) => <span className="font-bold">{text}</span>
+    },
+    {
+      title: 'Email',
+      dataIndex: 'email',
+      key: 'email',
+    },
+    {
+      title: 'Role',
+      dataIndex: 'role',
+      key: 'role',
+      render: (role) => (
+        <Tag color={role === 'super_admin' ? 'purple' : 'blue'}>
+          {role.replace('_', ' ').toUpperCase()}
+        </Tag>
+      )
+    },
+    {
+      title: 'Actions',
+      key: 'actions',
+      render: (_, record) => (
+        <Popconfirm title="Delete this staff user?" onConfirm={() => handleDelete(record._id)}>
+          <Button type="text" danger icon={<DeleteOutlined />} />
+        </Popconfirm>
+      )
+    }
+  ];
+
+  return (
+    <PageWrapper title="User Management" subtitle="Manage campus staff and assign roles.">
+      <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-lg font-bold">Campus Staff</h2>
+          <Button 
+            type="primary" 
+            icon={<PlusOutlined />} 
+            onClick={() => setIsModalOpen(true)}
+            className="bg-blue-600"
+          >
+            Add Staff
+          </Button>
+        </div>
+
+        <Table 
+          columns={columns} 
+          dataSource={staff} 
+          loading={loading} 
+          rowKey="_id"
+          pagination={{ pageSize: 10 }}
+        />
+      </div>
+
+      <Modal
+        title="Add New Staff Member"
+        open={isModalOpen}
+        onCancel={() => setIsModalOpen(false)}
+        onOk={() => form.submit()}
+      >
+        <Form form={form} layout="vertical" onFinish={handleCreate} className="mt-4">
+          <Form.Item name="fullName" label="Full Name" rules={[{ required: true }]}>
+            <Input placeholder="John Doe" />
+          </Form.Item>
+          <Form.Item name="email" label="Email" rules={[{ required: true, type: 'email' }]}>
+            <Input placeholder="john@csbm.lk" />
+          </Form.Item>
+          <Form.Item name="password" label="Initial Password" rules={[{ required: true }]}>
+            <Input.Password placeholder="••••••••" />
+          </Form.Item>
+          <Form.Item name="role" label="System Role" rules={[{ required: true }]}>
+            <Select placeholder="Select a role">
+              <Select.Option value="super_admin">Super Admin</Select.Option>
+              <Select.Option value="registration_staff">Registration Staff</Select.Option>
+              <Select.Option value="marketing_coordinator">Marketing Coordinator</Select.Option>
+              <Select.Option value="finance_staff">Finance Staff</Select.Option>
+            </Select>
+          </Form.Item>
+        </Form>
+      </Modal>
+    </PageWrapper>
+  );
+};
 
 const AnalyticsPage = () => {
   const [stats, setStats] = useState({ total: 0, approved: 0, rejected: 0, pending: 0, incomplete: 12 });
