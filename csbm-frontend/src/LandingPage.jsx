@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Logo from './components/Logo';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useApplyFlow } from './hooks/useApplyFlow';
 
 const StatCounter = ({ end, label, suffix = '' }) => {
     const [count, setCount] = useState(0);
@@ -166,6 +167,7 @@ const GalaxyCanvas = () => {
 const LandingPage = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
+    const { handleApplyNow } = useApplyFlow();
 
     useEffect(() => {
         const handleScroll = () => {
@@ -260,13 +262,15 @@ const LandingPage = () => {
                             Log In
                         </Link>
 
-                        {/* Gradient Sign Up button */}
-                        <Link
-                            to="/register"
+                        {/* Smart Apply Now button */}
+                        <button
+                            onClick={() => handleApplyNow()}
                             style={{
                                 background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
                                 boxShadow: '0 0 0 0 rgba(124,58,237,0)',
                                 transition: 'box-shadow 0.3s ease, filter 0.3s ease, transform 0.2s ease',
+                                border: 'none',
+                                cursor: 'pointer',
                             }}
                             onMouseEnter={e => {
                                 e.currentTarget.style.boxShadow = '0 0 20px rgba(124,58,237,0.5)';
@@ -280,8 +284,8 @@ const LandingPage = () => {
                             }}
                             className="inline-flex h-9 items-center justify-center rounded-full px-5 text-sm font-semibold text-white"
                         >
-                            Sign Up
-                        </Link>
+                            Apply Now
+                        </button>
 
                         {/* Mobile Menu */}
                         <button

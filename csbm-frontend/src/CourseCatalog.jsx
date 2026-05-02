@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from './context/AuthContext';
 
 
 const API_BASE = 'http://localhost:8080/api/courses';
@@ -20,6 +21,7 @@ const getCategoryStyle = (courseName) => {
 
 function CourseCatalog() {
   const navigate = useNavigate();
+  const { user, token } = useAuth();
   const [applyModal, setApplyModal] = useState(false);
   const [warningModal, setWarningModal] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState(null);
@@ -62,18 +64,26 @@ function CourseCatalog() {
   }, []);
 
   const handleApplyNow = async (course) => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      navigate('/login');
+    // 1. Not logged in → send to register
+    if (!token || !user) {
+      navigate('/register');
       return;
     }
+
+    // 2. Logged in but not a student → block
+    const role = (user.role || '').toLowerCase();
+    if (role !== 'student') {
+      alert('Only students can apply for courses. Admin/Staff accounts cannot submit applications.');
+      return;
+    }
+
+    // 3. Student → check if application is approved before enrolling in a course
     try {
       const res = await fetch('/api/applications/my-application', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
         const app = await res.json();
-        // Since my previous backend fix changed 404 to 200 { application: null }
         if (!app || !app.status || app.status !== 'APPROVED') {
           setWarningModal(true);
           return;

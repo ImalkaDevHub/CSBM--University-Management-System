@@ -7,6 +7,7 @@ import { signInWithPopup, sendPasswordResetEmail } from 'firebase/auth';
 import { auth, googleProvider } from './config/firebase';
 import Logo from './components/Logo';
 import loginBg from './assets/login-bg.png';
+import { useAuth } from './context/AuthContext';
 
 export default function Login() {
     const [email, setEmail] = useState('');
@@ -17,6 +18,7 @@ export default function Login() {
     const [resetEmail, setResetEmail] = useState('');
     const [isResetting, setIsResetting] = useState(false);
     const navigate = useNavigate();
+    const { login } = useAuth();
 
     const handleGoogleSignIn = async () => {
         setLoading(true);
@@ -37,18 +39,20 @@ export default function Login() {
             const response = await axios.post('http://localhost:8080/api/auth/google', userData);
 
             if (response.data.status === 'success') {
-                const role = (response.data.user?.role || response.data.role || '').toUpperCase();
-                
-                // Save session
-                localStorage.setItem('token', response.data.token);
-                localStorage.setItem('userRole', role);
-                localStorage.setItem('userName', response.data.user?.name || response.data.name || '');
-                localStorage.setItem('user', JSON.stringify(response.data.user || response.data));
+                const roleRaw = (response.data.user?.role || response.data.role || '').toLowerCase();
+                const googleUser = {
+                    ...(response.data.user || {}),
+                    name: response.data.user?.name || response.data.name || userData.name || '',
+                    role: roleRaw,
+                };
 
-                message.success(`Google Sign-In successful! Welcome, ${userData.name}`);
+                // Update AuthContext + localStorage atomically
+                login(googleUser, response.data.token);
+
+                message.success(`Google Sign-In successful! Welcome, ${googleUser.name}`);
 
                 // Redirect
-                if (role === 'ADMIN') {
+                if (['admin', 'super_admin', 'registration_staff', 'marketing_coordinator', 'finance_staff'].includes(roleRaw)) {
                     navigate('/admin-dashboard');
                 } else {
                     navigate('/student-dashboard');
@@ -106,15 +110,13 @@ export default function Login() {
 
                 const userData = response.data.user || {};
                 const role = (userData.role || response.data.role || '').toLowerCase();
-                
-                // Save user data to localStorage
-                localStorage.setItem('token', response.data.token);
-                localStorage.setItem('userRole', role);
-                localStorage.setItem('userName', userData.name || response.data.name || '');
-                localStorage.setItem('user', JSON.stringify(userData));
+                const normalizedUser = { ...userData, role };
+
+                // Update AuthContext + localStorage atomically
+                login(normalizedUser, response.data.token);
 
                 // Show success message
-                message.success(`Welcome back, ${userData.name || response.data.name}!`);
+                message.success(`Welcome back, ${userData.name || response.data.name || 'User'}!`);
 
                 // Redirect based on role
                 if (['super_admin', 'registration_staff', 'marketing_coordinator', 'finance_staff', 'admin'].includes(role)) {
