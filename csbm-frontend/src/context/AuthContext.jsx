@@ -63,8 +63,9 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('userRole');
     localStorage.removeItem('userName');
     localStorage.removeItem('user');
+    // Clear any other potentially related keys
+    localStorage.clear(); 
     setAuth({ token: null, user: null });
-    window.location.href = '/login';
   }, []);
 
   return (

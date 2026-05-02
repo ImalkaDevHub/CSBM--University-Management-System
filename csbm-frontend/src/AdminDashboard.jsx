@@ -25,6 +25,7 @@ import {
 import axios from 'axios';
 import dayjs from 'dayjs';
 import PaymentManagement from './admin/PaymentManagement';
+import { useAuth } from './context/AuthContext';
 
 
 
@@ -3485,7 +3486,8 @@ const NAV_SECTIONS = [
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
-  const [adminName, setAdminName] = useState('Admin');
+  const { user, logout } = useAuth();
+  const [adminName, setAdminName] = useState(user?.name || 'Admin');
 
   // --- ACADEMIC MODULE SHARED STATE ---
   const [diplomas, setDiplomas] = useState([
@@ -3529,8 +3531,8 @@ const AdminDashboard = () => {
   }, []);
 
   const handleLogout = () => {
-    localStorage.clear();
-    navigate('/login');
+    logout();
+    navigate('/login', { replace: true });
   };
 
   return (

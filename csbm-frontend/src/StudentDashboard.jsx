@@ -4,6 +4,7 @@ import CourseCatalog from './CourseCatalog';
 import WorkshopList from './WorkshopList';
 import ApplicationForm from './ApplicationForm';
 import Logo from './components/Logo';
+import { useAuth } from './context/AuthContext';
 
 const calculateDaysUntil = (dateString) => {
   if (!dateString) return 0;
@@ -49,6 +50,7 @@ const panelTitles = {
 
 const StudentDashboard = () => {
   const navigate = useNavigate();
+  const { user: authUser, token: authToken, logout } = useAuth();
 
   const [activePanel, setActivePanel] = useState('dashboard');
   const [payments, setPayments] = useState([]);
@@ -102,8 +104,8 @@ const StudentDashboard = () => {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/login');
+    logout();
+    navigate('/login', { replace: true });
   };
 
   useEffect(() => {
@@ -127,9 +129,8 @@ const StudentDashboard = () => {
   const handlePayment = async ({ paymentType, referenceId, itemName, amount }) => {
     setPaymentLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const userStr = localStorage.getItem('user');
-      const userObj = userStr && userStr !== 'undefined' ? JSON.parse(userStr) : {};
+      const token = authToken;
+      const userObj = authUser || {};
 
       const res = await fetch('/api/payments/initiate', {
         method: 'POST',
@@ -197,7 +198,7 @@ const StudentDashboard = () => {
   useEffect(() => {
     const fetchMyWorkshops = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token = authToken;
         if (!token) return;
         
         const res = await fetch('/api/workshops/my-registrations', {
@@ -223,7 +224,7 @@ const StudentDashboard = () => {
   }, [workshopRefresh]);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = authToken;
     if (!token) {
       navigate('/login');
       return;

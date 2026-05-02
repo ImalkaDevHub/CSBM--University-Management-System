@@ -38,6 +38,7 @@ import AnalyticsDashboard from './AnalyticsDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import Unauthorized from './Unauthorized';
 import { Navigate } from 'react-router-dom';
+import { useAuth } from './context/AuthContext';
 
 // PAYMENT UI ROUTES
 import PaymentSummary from './pages/payment/PaymentSummary';
@@ -67,22 +68,20 @@ const studentMenuItems = [
 // --- MAIN LAYOUT COMPONENT (Sidebar & Header) ---
 const MainLayout = () => {
   const { token: { borderRadiusLG } } = theme.useToken();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  const userRole = localStorage.getItem('userRole')?.toLowerCase(); // 'admin' | 'student' | 'lecturer'
-  const isAdmin = userRole === 'admin';
-  const userName = localStorage.getItem('userName');
-  const token = localStorage.getItem('token');
+  const userRole = user?.role?.toLowerCase();
+  const isAdmin = ['admin', 'super_admin', 'registration_staff', 'marketing_coordinator', 'finance_staff'].includes(userRole);
+  const userName = user?.name || 'User';
 
   const sidebarItems = isAdmin ? adminMenuItems : studentMenuItems;
 
   // Handle Logout
   const handleLogout = () => {
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('userName');
-    localStorage.removeItem('token');
+    logout();
     document.body.classList.remove('admin-dashboard');
-    navigate('/login');
+    navigate('/login', { replace: true });
   };
 
   useEffect(() => {
@@ -109,7 +108,7 @@ const MainLayout = () => {
         </Link>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-          <span style={{ color: 'rgba(255,255,255,0.6)' }}>{localStorage.getItem('userName') || 'User'}</span>
+          <span style={{ color: 'rgba(255,255,255,0.6)' }}>{userName}</span>
           <Avatar icon={<UserOutlined />} style={{ backgroundColor: '#1890ff' }} />
           <Button
             type="text"
