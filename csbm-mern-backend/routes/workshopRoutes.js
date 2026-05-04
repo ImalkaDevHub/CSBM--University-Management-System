@@ -8,34 +8,7 @@ const authorize = require('../middlewares/authorize');
 
 const router = express.Router();
 
-// --- PUBLIC ROUTES ---
-
-// GET all workshops
-router.get('/', async (req, res) => {
-    try {
-        const workshops = await Workshop.find({}).sort({ date: 1 });
-        res.json(workshops);
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-});
-
-// GET single workshop (Dynamic - Keep below static GETs)
-router.get('/:id', async (req, res) => {
-    try {
-        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-            return res.status(400).json({ message: 'Invalid ID' });
-        }
-        const workshop = await Workshop.findById(req.params.id);
-        if (!workshop) return res.status(404).json({ message: 'Workshop not found' });
-        res.json(workshop);
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-});
-
-
-// --- PROTECTED STUDENT ROUTES ---
+// --- SPECIFIC NAMED ROUTES (MUST BE FIRST) ---
 
 // GET my registrations
 router.get('/my-registrations', async (req, res) => {
@@ -65,8 +38,29 @@ router.post('/register', protect, async (req, res) => {
     } catch (err) { res.status(500).json({ message: err.message }); }
 });
 
+// GET registrations (Query based)
+router.get('/registrations/all', protect, authorize(['marketing_coordinator', 'admin', 'super_admin', 'ADMIN', 'SUPER_ADMIN', 'registration_staff', 'finance_staff']), async (req, res) => {
+    try {
+        const { workshop } = req.query;
+        if (!workshop) return res.status(400).json({ message: 'Workshop ID required' });
+        const regs = await WorkshopRegistration.find({ workshop }).populate('student', 'name email mobileNumber').sort({ registeredAt: -1 });
+        const mapped = regs.map(r => ({ ...r._doc, studentName: r.student?.name || 'Unknown', email: r.student?.email || 'N/A' }));
+        res.json(mapped);
+    } catch (err) { res.status(500).json({ message: err.message }); }
+});
 
-// --- PROTECTED ADMIN ROUTES ---
+
+// --- GENERIC/DYNAMIC ROUTES (MUST BE LAST) ---
+
+// GET all workshops
+router.get('/', async (req, res) => {
+    try {
+        const workshops = await Workshop.find({}).sort({ date: 1 });
+        res.json(workshops);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
 
 // POST create
 router.post('/', protect, authorize(['marketing_coordinator', 'admin', 'super_admin', 'ADMIN', 'SUPER_ADMIN', 'registration_staff', 'finance_staff']), async (req, res) => {
@@ -91,7 +85,21 @@ router.post('/', protect, authorize(['marketing_coordinator', 'admin', 'super_ad
     } catch (err) { res.status(500).json({ message: err.message }); }
 });
 
-// PUT update (Explicitly handle the /:id at the bottom of PUT methods)
+// GET single workshop
+router.get('/:id', async (req, res) => {
+    try {
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            return res.status(400).json({ message: 'Invalid ID' });
+        }
+        const workshop = await Workshop.findById(req.params.id);
+        if (!workshop) return res.status(404).json({ message: 'Workshop not found' });
+        res.json(workshop);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// PUT update
 router.put('/:id', protect, authorize(['marketing_coordinator', 'admin', 'super_admin', 'ADMIN', 'SUPER_ADMIN', 'registration_staff', 'finance_staff']), async (req, res) => {
     try {
         if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(400).json({ message: 'Invalid ID' });
@@ -107,17 +115,6 @@ router.delete('/:id', protect, authorize(['marketing_coordinator', 'admin', 'sup
         if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(400).json({ message: 'Invalid ID' });
         await Workshop.findByIdAndDelete(req.params.id);
         res.json({ message: 'Workshop deleted' });
-    } catch (err) { res.status(500).json({ message: err.message }); }
-});
-
-// GET registrations (Query based)
-router.get('/registrations/all', protect, authorize(['marketing_coordinator', 'admin', 'super_admin', 'ADMIN', 'SUPER_ADMIN', 'registration_staff', 'finance_staff']), async (req, res) => {
-    try {
-        const { workshop } = req.query;
-        if (!workshop) return res.status(400).json({ message: 'Workshop ID required' });
-        const regs = await WorkshopRegistration.find({ workshop }).populate('student', 'name email mobileNumber').sort({ registeredAt: -1 });
-        const mapped = regs.map(r => ({ ...r._doc, studentName: r.student?.name || 'Unknown', email: r.student?.email || 'N/A' }));
-        res.json(mapped);
     } catch (err) { res.status(500).json({ message: err.message }); }
 });
 
