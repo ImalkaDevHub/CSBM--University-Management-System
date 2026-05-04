@@ -51,10 +51,14 @@ const applicationController = {
                 nicUrl, birthCertUrl, passportPhotoUrl, transcriptUrl
             } = req.body;
 
-            // Basic validation
-            if (!fullName || !email || !nicUrl || !birthCertUrl || !passportPhotoUrl) {
+            // Basic validation - Support both nicUrl and nicFileName naming variants
+            const finalNic = nicUrl || req.body.nicFileName;
+            const finalBirth = birthCertUrl || req.body.birthCertFileName;
+            const finalPhoto = passportPhotoUrl || req.body.passportPhotoFileName;
+
+            if (!fullName || !email || !finalNic || !finalBirth || !finalPhoto) {
                 return res.status(400).json({ 
-                    error: 'Missing required fields or document URLs. Please ensure all required files are uploaded.' 
+                    error: 'Missing required fields or document URLs. Please ensure all required files (NIC, Birth Cert, Photo) are uploaded.' 
                 });
             }
 
