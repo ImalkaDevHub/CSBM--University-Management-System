@@ -8,8 +8,6 @@ const authorize = require('../middlewares/authorize');
 
 const router = express.Router();
 
-
-
 // GET all workshops (PUBLIC)
 router.get('/', async (req, res) => {
     try {
@@ -21,8 +19,8 @@ router.get('/', async (req, res) => {
     }
 });
 
-// GET my registrations - token optional
-router.get('/my', async (req, res) => {
+// GET my registrations (PROTECTED - Safe Token Pattern)
+router.get('/my-registrations', async (req, res) => {
     try {
         const authHeader = req.headers.authorization;
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -30,7 +28,7 @@ router.get('/my', async (req, res) => {
         }
         
         const token = authHeader.split(' ')[1];
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'csbm_super_secret_key_12345');
         const studentId = decoded.id || decoded._id;
         
         const registrations = await WorkshopRegistration.find({ student: studentId })
@@ -38,23 +36,8 @@ router.get('/my', async (req, res) => {
             .sort({ registeredAt: -1 });
         res.json(registrations);
     } catch (err) {
-        // Return empty list on any token error to prevent 401/404 issues on public views
         res.json([]);
     }
-});
-
-// Alias for my-registrations
-router.get('/my-registrations', async (req, res) => {
-    // Redirect to /my logic
-    try {
-        const authHeader = req.headers.authorization;
-        if (!authHeader) return res.json([]);
-        const token = authHeader.split(' ')[1];
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const registrations = await WorkshopRegistration.find({ student: decoded.id || decoded._id })
-            .populate('workshop').sort({ registeredAt: -1 });
-        res.json(registrations);
-    } catch (err) { res.json([]); }
 });
 
 // GET single workshop (PUBLIC)
@@ -68,8 +51,8 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-// POST register for workshop (PROTECTED)
-const registerHandler = async (req, res) => {
+// POST register for workshop (PROTECTED - Student Token)
+router.post('/register', protect, async (req, res) => {
     try {
         const studentId = req.user?._id || req.user?.id;
         const workshopId = req.body.workshopId || req.body.workshop || req.body.id;
@@ -98,20 +81,9 @@ const registerHandler = async (req, res) => {
     } catch (err) {
         res.status(500).json({ message: 'Server error: ' + err.message });
     }
-};
-
-router.post('/register', protect, registerHandler);
-router.post('/', protect, (req, res, next) => {
-    // Only handle if it's NOT a create workshop request (which has admin roles)
-    // Actually, create workshop is POST / too.
-    // We can differentiate by body content or just let it fall through if it's an admin.
-    if (req.body.workshopId || req.body.workshop) {
-        return registerHandler(req, res);
-    }
-    next();
 });
 
-// POST create workshop (ADMIN only)
+// POST create workshop (PROTECTED - Admin Only)
 router.post('/', protect, authorize(['marketing_coordinator', 'admin', 'super_admin']), async (req, res) => {
     try {
         const { title, topic, speaker, date, time, location, description, maxCapacity } = req.body;
@@ -131,8 +103,6 @@ router.post('/', protect, authorize(['marketing_coordinator', 'admin', 'super_ad
             maxCapacity: maxCapacity || req.body.totalSeats || 50,
             price: req.body.price || 0,
             bannerImage: req.body.bannerImage || req.body.banner || '',
-            speakerBio: req.body.speakerBio || '',
-            speakerPhoto: req.body.speakerPhoto || '',
             status: req.body.status || 'active',
             createdBy: req.user?._id || req.user?.id
         });
@@ -143,7 +113,7 @@ router.post('/', protect, authorize(['marketing_coordinator', 'admin', 'super_ad
     }
 });
 
-// PUT update workshop (ADMIN only)
+// PUT update workshop (PROTECTED - Admin Only)
 router.put('/:id', protect, authorize(['marketing_coordinator', 'admin', 'super_admin']), async (req, res) => {
     try {
         const updated = await Workshop.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true });
@@ -153,7 +123,7 @@ router.put('/:id', protect, authorize(['marketing_coordinator', 'admin', 'super_
     }
 });
 
-// DELETE workshop (ADMIN only)
+// DELETE workshop (PROTECTED - Admin Only)
 router.delete('/:id', protect, authorize(['marketing_coordinator', 'admin', 'super_admin']), async (req, res) => {
     try {
         await Workshop.findByIdAndDelete(req.params.id);
