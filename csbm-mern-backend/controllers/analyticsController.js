@@ -1,49 +1,114 @@
 const StudentApplication = require('../models/StudentApplication');
 const Notification = require('../models/Notification');
+const Course = require('../models/Course');
 const { sendEmail } = require('../services/emailService');
 
 const analyticsController = {
-    // GET /api/analytics/stats
-    getStats: async (req, res) => {
+    // GET /api/analytics/dashboard
+    getDashboardStats: async (req, res) => {
         try {
             const total = await StudentApplication.countDocuments();
             const approved = await StudentApplication.countDocuments({ status: 'APPROVED' });
             const rejected = await StudentApplication.countDocuments({ status: 'REJECTED' });
-            const pending = total - approved - rejected;
+            const pending = await StudentApplication.countDocuments({ status: 'PENDING' });
+            const incomplete = await StudentApplication.countDocuments({ status: 'UPDATES REQUESTED' });
+
+            const approvalRate = total > 0 ? ((approved / total) * 100).toFixed(0) + '%' : '0%';
+
+            // Find Top Course
+            const courseStats = await StudentApplication.aggregate([
+                { $group: { _id: "$courseName", count: { $sum: 1 } } },
+                { $sort: { count: -1 } },
+                { $limit: 1 }
+            ]);
+            const topCourse = courseStats.length > 0 ? courseStats[0]._id : 'N/A';
+
+            // Registrations this month
+            const startOfMonth = new Date();
+            startOfMonth.setDate(1);
+            startOfMonth.setHours(0, 0, 0, 0);
+            const totalThisMonth = await StudentApplication.countDocuments({ createdAt: { $gte: startOfMonth } });
 
             res.status(200).json({
                 total,
                 approved,
                 rejected,
-                pending
+                pending,
+                incomplete,
+                approvalRate,
+                topCourse,
+                totalThisMonth,
+                avgProcessTime: '1.2d' // Mocked for now
             });
         } catch (error) {
-            res.status(500).json({ error: 'Failed to fetch overall stats', details: error.message });
+            console.error(error);
+            res.status(500).json({ error: 'Failed to fetch dashboard stats' });
         }
     },
 
-    // GET /api/analytics/export
+    // GET /api/analytics/trends
+    getTrends: async (req, res) => {
+        try {
+            // Get last 6 months data
+            const last6Months = [];
+            for (let i = 5; i >= 0; i--) {
+                const date = new Date();
+                date.setMonth(date.getMonth() - i);
+                last6Months.push({
+                    month: date.toLocaleString('default', { month: 'short' }),
+                    year: date.getFullYear(),
+                    start: new Date(date.getFullYear(), date.getMonth(), 1),
+                    end: new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59)
+                });
+            }
+
+            const trendData = await Promise.all(last6Months.map(async (m) => {
+                const count = await StudentApplication.countDocuments({
+                    createdAt: { $gte: m.start, $lte: m.end }
+                });
+                return count;
+            }));
+
+            res.status(200).json({
+                labels: last6Months.map(m => m.month),
+                monthlyData: trendData
+            });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: 'Failed to fetch trends' });
+        }
+    },
+
+    // GET /api/analytics/export/applications
     exportToCSV: async (req, res) => {
         try {
-            const students = await StudentApplication.find();
+            const { type, format } = req.query;
+            let query = {};
+            
+            if (type === 'by_course' && req.query.course) query.courseName = req.query.course;
+            if (type === 'by_intake' && req.query.intake) query.intakeYear = req.query.intake;
+            if (type === 'incomplete') query.status = 'UPDATES REQUESTED';
 
-            let csv = 'ID,Full Name,Email,Mobile Number,Course,Registration Date,Status,Admin Comments\n';
+            const students = await StudentApplication.find(query).sort({ createdAt: -1 });
+
+            let csv = 'ID,Full Name,Email,NIC,Course,Intake,Status,Date,Comments\n';
             students.forEach(s => {
-                // Escape commas in strings to prevent CSV breakage
                 const name = `"${s.fullName || ''}"`;
                 const email = `"${s.email || ''}"`;
+                const nic = `"${s.nicPassportNumber || ''}"`;
                 const course = `"${s.courseName || ''}"`;
-                const comments = `"${s.adminComments || ''}"`;
-                const date = `"${new Date(s.createdAt).toISOString().split('T')[0]}"`;
+                const comments = `"${(s.adminComments || '').replace(/"/g, '""')}"`;
+                const date = `"${new Date(s.createdAt).toLocaleDateString()}"`;
 
-                csv += `${s._id},${name},${email},${s.mobileNumber || ''},${course},${date},${s.status},${comments}\n`;
+                csv += `${s._id},${name},${email},${nic},${course},${s.intakeYear || ''},${s.status},${date},${comments}\n`;
             });
 
             res.setHeader('Content-Type', 'text/csv');
-            res.setHeader('Content-Disposition', 'attachment; filename="students.csv"');
+            res.setHeader('Content-Disposition', `attachment; filename="CampusGo_Export_${new Date().getTime()}.csv"`);
             res.status(200).send(csv);
         } catch (error) {
-            res.status(500).json({ error: 'Failed to export to CSV', details: error.message });
+            console.error(error);
+            res.status(500).json({ error: 'Export failed' });
         }
     },
 
@@ -51,66 +116,40 @@ const analyticsController = {
     sendNotification: async (req, res) => {
         try {
             const { type, recipientGroup, subject, message, recipientEmails } = req.body;
-
             let recipients = [];
 
             if (recipientEmails && recipientEmails.length > 0) {
-                // Handle string or array gracefully to prevent MongoDB CastError
                 const emailsArray = Array.isArray(recipientEmails) ? recipientEmails : [recipientEmails];
-                
-                // Direct specific students
-                const students = await StudentApplication.find({ email: { $in: emailsArray } });
-                
-                // Support mocked frontend rows that don't exist in MongoDB yet
-                const foundEmails = students.map(s => s.email);
-                const missingEmails = emailsArray.filter(e => !foundEmails.includes(e));
-
-                recipients = [...students];
-                missingEmails.forEach(email => {
-                    recipients.push({ email, fullName: email.split('@')[0] }); // Best-effort mock student
-                });
+                recipients = await StudentApplication.find({ email: { $in: emailsArray } });
             } else if (recipientGroup === 'All Incomplete Students') {
-                recipients = await StudentApplication.find({ status: 'PENDING' });
+                recipients = await StudentApplication.find({ status: { $in: ['PENDING', 'UPDATES REQUESTED'] } });
             } else if (recipientGroup === 'All Approved Students') {
                 recipients = await StudentApplication.find({ status: 'APPROVED' });
-            } else if (recipientGroup === 'All Students') {
-                recipients = await StudentApplication.find();
             } else {
-                return res.status(400).json({ error: 'Invalid recipient group or missing emails' });
+                recipients = await StudentApplication.find();
             }
 
-            if (recipients.length === 0) {
-                return res.status(200).json({ message: "No students found to notify." });
-            }
-
-            // Create notification records in DB
             const notifications = recipients.map(student => ({
-                userId: student.userId, // Some students might not have userId if manually added, but email is there
                 email: student.email,
-                type: type,
-                subject: subject,
-                // Make sure message exists to prevent crashing when .replace is called
-                message: (message || '').replace('{studentName}', student.fullName || 'Student'),
-                isRead: false,
+                type: type || 'ALERT',
+                subject: subject || 'CampusGo Notification',
+                message: (message || '').replace('{studentName}', student.fullName),
                 status: 'sent',
-                createdBy: 'admin',
                 createdAt: new Date()
             }));
 
             await Notification.insertMany(notifications);
 
-            // Mock or actual send emails
             const emailPromises = recipients.map(student => {
-                const personalizedMsg = (message || '').replace('{studentName}', student.fullName || 'Student');
-                return sendEmail(student.email, subject, `<h3>Dear ${student.fullName || 'Student'},</h3><p>${personalizedMsg.replace(/\n/g, '<br>')}</p>`).catch(e => console.error("Email failed", e));
+                const personalizedMsg = (message || '').replace('{studentName}', student.fullName);
+                return sendEmail(student.email, subject, `<h3>Dear ${student.fullName},</h3><p>${personalizedMsg.replace(/\n/g, '<br>')}</p>`);
             });
 
             await Promise.allSettled(emailPromises);
-
-            return res.status(200).json({ message: `Successfully sent notifications to ${recipients.length} students.` });
+            res.status(200).json({ success: true, count: recipients.length });
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: 'Failed to send notification', details: error.message });
+            res.status(500).json({ error: 'Notification failed' });
         }
     }
 };

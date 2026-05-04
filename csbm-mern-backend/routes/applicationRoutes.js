@@ -7,6 +7,7 @@ const authorize = require('../middlewares/authorize');
 // ── SUBMIT APPLICATION ──────────────────────────────────────────────────────
 // Receives JSON with Cloudinary URLs from the frontend (no multer needed)
 router.post('/submit', applicationController.submitApplication);
+router.post('/manual', verifyToken, authorize(['registration_staff', 'super_admin']), applicationController.submitManualApplication);
 
 // ── STUDENT ACTIONS ─────────────────────────────────────────────────────────
 // Fetch the logged-in student's specific application

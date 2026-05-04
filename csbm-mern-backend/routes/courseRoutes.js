@@ -34,6 +34,9 @@ router.get('/enrolled', verifyToken, async (req, res) => {
     }
 });
 
+// Public Check (Automated Eligibility Checker)
+router.post('/check-eligibility', courseController.checkEligibility);
+
 // 1. CRUD endpoints
 router.post('/', ...adminOnly, courseController.addCourse);
 router.get('/', courseController.listCourses);

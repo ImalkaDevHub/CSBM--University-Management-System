@@ -4,6 +4,43 @@ const { sendEmail } = require('../services/emailService');
 const applicationController = {
     // POST /api/applications/submit
     // Receives JSON with Cloudinary URLs from the frontend
+    // POST /api/applications/manual
+    submitManualApplication: async (req, res) => {
+        try {
+            const {
+                fullName, email, mobileNumber, nic, courseId, intake,
+                paymentMethod, amountPaid, receiptNumber, notes
+            } = req.body;
+
+            const StudentApplication = require('../models/StudentApplication');
+            const Course = require('../models/Course');
+            
+            const selectedCourse = await Course.findById(courseId);
+
+            const app = new StudentApplication({
+                fullName,
+                email,
+                mobileNumber,
+                address: 'Walk-in / Physical Registration',
+                nicPassportNumber: nic,
+                courseName: selectedCourse?.name || 'Manual Enrollment',
+                intakeYear: intake,
+                status: 'APPROVED', // Manual registrations are usually approved immediately
+                digitalSignature: 'PHYSICAL_SIGNATURE_ON_FILE',
+                nicFileName: 'MANUAL',
+                birthCertFileName: 'MANUAL',
+                passportPhotoFileName: 'MANUAL',
+                adminComments: `Manual entry by ${req.user.name}. Receipt: ${receiptNumber}. Method: ${paymentMethod}. Notes: ${notes}`
+            });
+
+            await app.save();
+            res.status(201).json({ success: true, message: 'Manual registration successful', application: app });
+        } catch (error) {
+            console.error('Manual App Error:', error);
+            res.status(500).json({ error: 'Manual registration failed', details: error.message });
+        }
+    },
+
     submitApplication: async (req, res) => {
         try {
             console.log('[Backend] Receiving application submission:', req.body.email);
@@ -31,13 +68,13 @@ const applicationController = {
                 qualification,
                 institution,
                 gpa,
-                courseName: course,
+                courseName: req.body.courseName || course,
                 digitalSignature,
-                // Saving Cloudinary URLs directly as strings
-                nicFileName:           nicUrl,
-                birthCertFileName:     birthCertUrl,
-                passportPhotoFileName: passportPhotoUrl,
-                transcriptFileName:    transcriptUrl || null,
+                // Saving Cloudinary URLs directly
+                nicFileName:           req.body.nicFileName || nicUrl,
+                birthCertFileName:     req.body.birthCertFileName || birthCertUrl,
+                passportPhotoFileName: req.body.passportPhotoFileName || passportPhotoUrl,
+                transcriptFileName:    req.body.transcriptFileName || transcriptUrl || null,
                 status: 'PENDING'
             });
 

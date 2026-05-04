@@ -8,6 +8,13 @@ const courseSchema = new mongoose.Schema({
     fees: { type: Number, required: true },
     price: { type: Number },
     eligibilityRequirements: { type: String },
+    minAge: { type: Number, default: 16 },
+    minGPA: { type: Number, default: 2.0 },
+    requiredEducationLevel: { 
+        type: String, 
+        enum: ['O/L', 'A/L', 'Diploma', 'Degree', 'Master'], 
+        default: 'A/L' 
+    },
     intakeStatus: { 
         type: String, 
         enum: ['OPEN', 'CLOSED', 'UPCOMING'], 

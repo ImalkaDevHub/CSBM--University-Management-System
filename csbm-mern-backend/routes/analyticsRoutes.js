@@ -5,8 +5,10 @@ const analyticsController = require('../controllers/analyticsController');
 const { verifyToken } = require('../middlewares/authMiddleware');
 const authorize = require('../middlewares/authorize');
 
-router.get('/stats', verifyToken, authorize(['finance_staff']), analyticsController.getStats);
-router.get('/export', verifyToken, authorize(['finance_staff']), analyticsController.exportToCSV);
-router.post('/notify', verifyToken, authorize(['finance_staff']), analyticsController.sendNotification);
+// Administrative Registration Workflow & Approval Engine Endpoints
+router.get('/dashboard', verifyToken, authorize(['registration_staff', 'super_admin']), analyticsController.getDashboardStats);
+router.get('/trends', verifyToken, authorize(['registration_staff', 'super_admin']), analyticsController.getTrends);
+router.get('/export/applications', verifyToken, authorize(['registration_staff', 'super_admin']), analyticsController.exportToCSV);
+router.post('/notify', verifyToken, authorize(['registration_staff', 'super_admin']), analyticsController.sendNotification);
 
 module.exports = router;

@@ -125,36 +125,67 @@ const courseController = {
     },
 
     // 4. ELIGIBILITY CHECK
-    // POST /api/courses/:id/check-eligibility
-    // accepts { answers: [boolean] }
+    // POST /api/courses/check-eligibility
+    // accepts { courseId, edLevel, results, age }
     checkEligibility: async (req, res) => {
         try {
-            const { answers } = req.body;
-            const course = await Course.findById(req.params.id);
+            const { courseId, edLevel, results, age } = req.body;
+            const course = await Course.findById(courseId);
             
             if (!course) {
                 return res.status(404).json({ error: 'Course not found' });
             }
 
-            // Simple logic: if any answer is false, they might not be eligible.
+            const studentGPA = parseFloat(results);
+            const studentAge = parseInt(age);
+            
+            const levelWeights = { 'O/L': 1, 'A/L': 2, 'Diploma': 3, 'Degree': 4, 'Master': 5 };
+            const studentLevelWeight = levelWeights[edLevel] || 0;
+            const requiredLevelWeight = levelWeights[course.requiredEducationLevel] || 2; // Default A/L
+
             let isEligible = true;
-            if (answers && Array.isArray(answers)) {
-                isEligible = answers.every(ans => ans === true);
+            let failureReason = '';
+
+            // Check Age
+            if (studentAge < course.minAge) {
+                isEligible = false;
+                failureReason = `Minimum age required is ${course.minAge}.`;
+            }
+
+            // Check Education Level
+            if (studentLevelWeight < requiredLevelWeight) {
+                isEligible = false;
+                failureReason = `Minimum education level required is ${course.requiredEducationLevel}.`;
+            }
+
+            // Check GPA (if numeric)
+            if (!isNaN(studentGPA) && studentGPA < course.minGPA) {
+                isEligible = false;
+                failureReason = `Minimum GPA/Result score required is ${course.minGPA}.`;
             }
 
             if (isEligible) {
                 res.status(200).json({
                     eligible: true,
-                    message: "You are Eligible! You can enroll in this course."
+                    message: `You meet all the entry requirements for ${course.title}!`,
+                    courseDetails: {
+                        fees: course.fees || course.price,
+                        duration: course.duration,
+                        code: course.code
+                    }
                 });
             } else {
                 res.status(200).json({
                     eligible: false,
-                    message: "You may not qualify. Review the requirements."
+                    message: `Based on your profile, you do not meet the minimum requirements. ${failureReason}`,
+                    courseDetails: {
+                        fees: course.fees || course.price
+                    }
                 });
             }
         } catch (error) {
-            res.status(500).json({ error: 'Server error while checking eligibility', details: error.message });
+            console.error('Eligibility Error:', error);
+            res.status(500).json({ error: 'Server error while checking eligibility' });
         }
     },
 
