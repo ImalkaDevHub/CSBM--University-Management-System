@@ -69,7 +69,7 @@ router.post('/register', protect, async (req, res) => {
 // --- PROTECTED ADMIN ROUTES ---
 
 // POST create
-router.post('/', protect, authorize(['marketing_coordinator', 'admin', 'super_admin']), async (req, res) => {
+router.post('/', protect, authorize(['marketing_coordinator', 'admin', 'super_admin', 'ADMIN', 'SUPER_ADMIN', 'registration_staff', 'finance_staff']), async (req, res) => {
     try {
         const { title, topic, speaker, date } = req.body;
         if (!(speaker || req.body.speakerName) || !date) return res.status(400).json({ message: 'Missing fields' });
@@ -92,7 +92,7 @@ router.post('/', protect, authorize(['marketing_coordinator', 'admin', 'super_ad
 });
 
 // PUT update (Explicitly handle the /:id at the bottom of PUT methods)
-router.put('/:id', protect, authorize(['marketing_coordinator', 'admin', 'super_admin']), async (req, res) => {
+router.put('/:id', protect, authorize(['marketing_coordinator', 'admin', 'super_admin', 'ADMIN', 'SUPER_ADMIN', 'registration_staff', 'finance_staff']), async (req, res) => {
     try {
         if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(400).json({ message: 'Invalid ID' });
         const updated = await Workshop.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true });
@@ -102,7 +102,7 @@ router.put('/:id', protect, authorize(['marketing_coordinator', 'admin', 'super_
 });
 
 // DELETE
-router.delete('/:id', protect, authorize(['marketing_coordinator', 'admin', 'super_admin']), async (req, res) => {
+router.delete('/:id', protect, authorize(['marketing_coordinator', 'admin', 'super_admin', 'ADMIN', 'SUPER_ADMIN', 'registration_staff', 'finance_staff']), async (req, res) => {
     try {
         if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(400).json({ message: 'Invalid ID' });
         await Workshop.findByIdAndDelete(req.params.id);
@@ -111,7 +111,7 @@ router.delete('/:id', protect, authorize(['marketing_coordinator', 'admin', 'sup
 });
 
 // GET registrations (Query based)
-router.get('/registrations/all', protect, authorize(['marketing_coordinator', 'admin', 'super_admin']), async (req, res) => {
+router.get('/registrations/all', protect, authorize(['marketing_coordinator', 'admin', 'super_admin', 'ADMIN', 'SUPER_ADMIN', 'registration_staff', 'finance_staff']), async (req, res) => {
     try {
         const { workshop } = req.query;
         if (!workshop) return res.status(400).json({ message: 'Workshop ID required' });

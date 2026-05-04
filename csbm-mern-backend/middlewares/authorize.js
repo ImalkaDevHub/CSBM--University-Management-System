@@ -4,14 +4,21 @@ const authorize = (roles = []) => {
             return res.status(401).json({ status: "error", message: "Authentication required." });
         }
 
+        const userRole = (req.user.role || '').toLowerCase();
+        
         // super_admin bypasses ALL checks automatically
-        if (req.user.role === 'super_admin') {
+        if (userRole === 'super_admin' || userRole === 'admin') {
             return next();
         }
 
+        const allowedRoles = roles.map(r => r.toLowerCase());
+
         // Check if user's role is in the allowed roles list
-        if (roles.length && !roles.includes(req.user.role)) {
-            return res.status(403).json({ status: "error", message: "Access denied" });
+        if (allowedRoles.length && !allowedRoles.includes(userRole)) {
+            return res.status(403).json({ 
+                status: "error", 
+                message: "Access denied. Insufficient permissions." 
+            });
         }
 
         next();
