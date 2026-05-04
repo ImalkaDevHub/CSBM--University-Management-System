@@ -9,35 +9,63 @@ const authController = {
     loginUser: async (req, res) => {
         try {
             const { email, password } = req.body;
+            console.log(`[AUTH] Login attempt for: ${email}`);
 
             const user = await User.findOne({ email });
-
-            if (user) {
-                // Check if password matches (either plain text or hashed)
-                const isMatch = user.password === password || await bcrypt.compare(password, user.password).catch(() => false);
-                
-                if (isMatch) {
-                    // Sign JWT Template
-                    const token = jwt.sign(
-                        { id: user._id, role: user.role || 'STUDENT' },
-                        JWT_SECRET,
-                        { expiresIn: '7d' }
-                    );
-
-                    return res.status(200).json({
-                        status: "success",
-                        token: token,
-                        user: {
-                            id: user._id,
-                            name: user.fullName,
-                            email: user.email,
-                            role: user.role || 'STUDENT'
-                        }
-                    });
-                }
+            
+            if (!user) {
+                console.log(`[AUTH] User not found: ${email}`);
+                return res.status(401).json({ status: "error", message: "Invalid credentials" });
             }
 
-            res.status(401).json({ status: "error", message: "Invalid credentials" });
+            console.log('--- DB USER DEBUG ---');
+            console.log('Email from DB:', user.email);
+            console.log('Pass from DB:', user.password);
+            console.log('---------------------');
+
+            console.log('--- EXTREME LOGIN DEBUG ---');
+            console.log(`Input Email:  >${email}<`);
+            console.log(`DB Email:     >${user.email}<`);
+            console.log(`Input Pass:   >${password}<`);
+            console.log(`DB Pass:      >${user.password}<`);
+            
+            // Check if password matches
+            let isMatch = false;
+            try {
+                isMatch = await bcrypt.compare(password, user.password);
+                console.log(`Bcrypt Match Result: ${isMatch}`);
+            } catch (e) {
+                console.log('Bcrypt Error:', e.message);
+                isMatch = false;
+            }
+
+            if (!isMatch && user.password === password) {
+                isMatch = true;
+                console.log('--- SUCCESS: Logged in with legacy plain text match ---');
+            }
+
+            if (!isMatch) {
+                console.log(`[AUTH] Password mismatch for: ${email}`);
+                return res.status(401).json({ status: "error", message: "Invalid credentials" });
+            }
+
+            // Sign JWT
+            const token = jwt.sign(
+                { id: user._id, role: user.role || 'STUDENT' },
+                JWT_SECRET,
+                { expiresIn: '7d' }
+            );
+
+            res.status(200).json({
+                status: "success",
+                token: token,
+                user: {
+                    id: user._id,
+                    name: user.fullName,
+                    email: user.email,
+                    role: user.role || 'STUDENT'
+                }
+            });
         } catch (error) {
             console.error('Login Error:', error);
             res.status(500).json({ status: "error", message: "Login failed", details: error.message });
@@ -124,7 +152,7 @@ const authController = {
     // POST /api/auth/register
     registerUser: async (req, res) => {
         try {
-            const { email } = req.body;
+            const { email, password } = req.body;
 
             const existingUser = await User.findOne({ email });
             if (existingUser) {
@@ -134,7 +162,14 @@ const authController = {
                 });
             }
 
-            const user = new User({ ...req.body, role: 'STUDENT' });
+            // Hash the password before saving
+            const hashedPassword = await bcrypt.hash(password, 10);
+
+            const user = new User({ 
+                ...req.body, 
+                password: hashedPassword,
+                role: 'STUDENT' 
+            });
             const savedUser = await user.save();
 
             res.status(200).json({
@@ -144,7 +179,30 @@ const authController = {
                 role: savedUser.role
             });
         } catch (error) {
-            res.status(500).json({ status: "error", message: "Registration failed", details: error.message });
+            console.error('Register Error:', error);
+            
+            // Handle Mongoose Validation Errors (Required fields, etc)
+            if (error.name === 'ValidationError') {
+                return res.status(400).json({ 
+                    status: "error", 
+                    message: Object.values(error.errors).map(e => e.message).join(', ')
+                });
+            }
+
+            res.status(500).json({ 
+                status: "error", 
+                message: "Registration failed", 
+                details: error.message 
+            });
+        }
+    },
+    // TEMP: Debug route to see all users (DELETE BEFORE PRODUCTION)
+    debugUsers: async (req, res) => {
+        try {
+            const users = await User.find({}, 'email fullName role password');
+            res.status(200).json(users);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
         }
     }
 };
