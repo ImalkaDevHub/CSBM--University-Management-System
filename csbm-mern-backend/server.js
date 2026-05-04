@@ -55,6 +55,7 @@ app.use('/api/courses', courseRoutes);
 app.use('/api/schedule', scheduleRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/workshops', workshopRoutes);
+app.use('/api/workshop-registrations', workshopRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/payments', paymentRoutes);
 
