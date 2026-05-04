@@ -8,21 +8,34 @@ const authorize = require('../middlewares/authorize');
 
 const router = express.Router();
 
-// --- SPECIFIC NAMED ROUTES (MUST BE FIRST) ---
+// --- SPECIFIC NAMED ROUTES (MUST BE AT THE VERY TOP) ---
 
-// GET my registrations
-router.get('/my-registrations', async (req, res) => {
+// GET my registrations (NEW PERMANENT PATH)
+router.get('/registrations/my', protect, async (req, res) => {
     try {
-        const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith('Bearer ')) return res.json([]);
-        const token = authHeader.split(' ')[1];
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'csbm_super_secret_key_12345');
-        const registrations = await WorkshopRegistration.find({ student: decoded.id || decoded._id }).populate('workshop').sort({ registeredAt: -1 });
+        const studentId = req.user?._id || req.user?.id;
+        const registrations = await WorkshopRegistration
+            .find({ student: studentId })
+            .populate('workshop')
+            .sort({ registeredAt: -1 });
         res.json(registrations);
-    } catch (err) { res.json([]); }
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
 });
 
-// POST register
+// GET registrations for a specific workshop (ADMIN only)
+router.get('/registrations/all', protect, authorize(['marketing_coordinator', 'admin', 'super_admin', 'ADMIN', 'SUPER_ADMIN', 'registration_staff', 'finance_staff']), async (req, res) => {
+    try {
+        const { workshop } = req.query;
+        if (!workshop) return res.status(400).json({ message: 'Workshop ID required' });
+        const regs = await WorkshopRegistration.find({ workshop }).populate('student', 'name email mobileNumber').sort({ registeredAt: -1 });
+        const mapped = regs.map(r => ({ ...r._doc, studentName: r.student?.name || 'Unknown', email: r.student?.email || 'N/A' }));
+        res.json(mapped);
+    } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
+// POST register for a workshop
 router.post('/register', protect, async (req, res) => {
     try {
         const studentId = req.user?._id || req.user?.id;
@@ -38,21 +51,10 @@ router.post('/register', protect, async (req, res) => {
     } catch (err) { res.status(500).json({ message: err.message }); }
 });
 
-// GET registrations (Query based)
-router.get('/registrations/all', protect, authorize(['marketing_coordinator', 'admin', 'super_admin', 'ADMIN', 'SUPER_ADMIN', 'registration_staff', 'finance_staff']), async (req, res) => {
-    try {
-        const { workshop } = req.query;
-        if (!workshop) return res.status(400).json({ message: 'Workshop ID required' });
-        const regs = await WorkshopRegistration.find({ workshop }).populate('student', 'name email mobileNumber').sort({ registeredAt: -1 });
-        const mapped = regs.map(r => ({ ...r._doc, studentName: r.student?.name || 'Unknown', email: r.student?.email || 'N/A' }));
-        res.json(mapped);
-    } catch (err) { res.status(500).json({ message: err.message }); }
-});
 
+// --- GENERIC/DYNAMIC ROUTES (MUST BE AFTER SPECIFIC ROUTES) ---
 
-// --- GENERIC/DYNAMIC ROUTES (MUST BE LAST) ---
-
-// GET all workshops
+// GET all workshops (PUBLIC)
 router.get('/', async (req, res) => {
     try {
         const workshops = await Workshop.find({}).sort({ date: 1 });
@@ -62,7 +64,7 @@ router.get('/', async (req, res) => {
     }
 });
 
-// POST create
+// POST create workshop (ADMIN only)
 router.post('/', protect, authorize(['marketing_coordinator', 'admin', 'super_admin', 'ADMIN', 'SUPER_ADMIN', 'registration_staff', 'finance_staff']), async (req, res) => {
     try {
         const { title, topic, speaker, date } = req.body;
@@ -99,7 +101,7 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-// PUT update
+// PUT update workshop
 router.put('/:id', protect, authorize(['marketing_coordinator', 'admin', 'super_admin', 'ADMIN', 'SUPER_ADMIN', 'registration_staff', 'finance_staff']), async (req, res) => {
     try {
         if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(400).json({ message: 'Invalid ID' });
@@ -109,7 +111,7 @@ router.put('/:id', protect, authorize(['marketing_coordinator', 'admin', 'super_
     } catch (err) { res.status(500).json({ message: err.message }); }
 });
 
-// DELETE
+// DELETE workshop
 router.delete('/:id', protect, authorize(['marketing_coordinator', 'admin', 'super_admin', 'ADMIN', 'SUPER_ADMIN', 'registration_staff', 'finance_staff']), async (req, res) => {
     try {
         if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(400).json({ message: 'Invalid ID' });
