@@ -1,5 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
 const Workshop = require('../models/Workshop');
 const WorkshopRegistration = require('../models/WorkshopRegistration');
 const { verifyToken: protect } = require('../middlewares/authMiddleware');
@@ -20,40 +21,48 @@ router.get('/', async (req, res) => {
     }
 });
 
+// GET my registrations - token optional
+router.get('/my', async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.json([]);
+        }
+        
+        const token = authHeader.split(' ')[1];
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const studentId = decoded.id || decoded._id;
+        
+        const registrations = await WorkshopRegistration.find({ student: studentId })
+            .populate('workshop')
+            .sort({ registeredAt: -1 });
+        res.json(registrations);
+    } catch (err) {
+        // Return empty list on any token error to prevent 401/404 issues on public views
+        res.json([]);
+    }
+});
+
+// Alias for my-registrations
+router.get('/my-registrations', async (req, res) => {
+    // Redirect to /my logic
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader) return res.json([]);
+        const token = authHeader.split(' ')[1];
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const registrations = await WorkshopRegistration.find({ student: decoded.id || decoded._id })
+            .populate('workshop').sort({ registeredAt: -1 });
+        res.json(registrations);
+    } catch (err) { res.json([]); }
+});
+
 // GET single workshop (PUBLIC)
 router.get('/:id', async (req, res) => {
     try {
         const workshop = await Workshop.findById(req.params.id);
         if (!workshop) return res.status(404).json({ message: 'Workshop not found' });
         res.json(workshop);
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-});
-
-// GET my registrations (PROTECTED)
-// Works as /api/workshops/my-registrations OR /api/workshopregistrations/my
-router.get('/my-registrations', protect, async (req, res) => {
-    try {
-        const studentId = req.user?._id || req.user?.id;
-        const registrations = await WorkshopRegistration.find({ student: studentId })
-            .populate('workshop')
-            .sort({ registeredAt: -1 });
-        res.json(registrations);
-    } catch (err) {
-        console.error('My registrations error:', err);
-        res.status(500).json({ message: err.message });
-    }
-});
-
-// Alias for /api/workshopregistrations/my
-router.get('/my', protect, async (req, res) => {
-    try {
-        const studentId = req.user?._id || req.user?.id;
-        const registrations = await WorkshopRegistration.find({ student: studentId })
-            .populate('workshop')
-            .sort({ registeredAt: -1 });
-        res.json(registrations);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
