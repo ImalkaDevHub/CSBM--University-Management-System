@@ -5,31 +5,19 @@ const StudentApplication = require('../models/StudentApplication');
 const { verifyToken } = require('../middlewares/authMiddleware');
 const authorize = require('../middlewares/authorize');
 
-// 🚀 TRACKER 1: Prove the file is loading
-console.log("----------------------------------------");
-console.log("🚀 BOOT SEQUENCE: courseRoutes.js is loading!");
-
-// Define routes
-router.post('/', verifyToken, authorize(['marketing_coordinator']), courseController.addCourse);
-router.get('/', courseController.listCourses);
-router.get('/all', courseController.listCourses);
-
-// 🚀 TRACKER 2: Prove the Eligibility Route is attached
-router.post('/check-eligibility', courseController.checkEligibility);
-console.log("✅ SUCCESS: /check-eligibility route is officially attached!");
-console.log("----------------------------------------");
+// Helper to easily define admin roles
+const adminOnly = [verifyToken, authorize(['super_admin', 'marketing_coordinator', 'registration_staff'])];
 
 // GET /api/courses/enrolled (auth required)
 // Must be declared BEFORE /:id to avoid route conflict
 router.get('/enrolled', verifyToken, async (req, res) => {
     try {
-        // StudentApplication stores email as a string (not ObjectId ref)
         const application = await StudentApplication
             .findOne({ email: req.user.email, status: 'APPROVED' })
             .sort({ createdAt: -1 });
 
         if (!application) {
-            return res.json([]); // empty is ok — student may not be enrolled yet
+            return res.json([]); 
         }
 
         const courses = [{
@@ -46,6 +34,23 @@ router.get('/enrolled', verifyToken, async (req, res) => {
     }
 });
 
-router.put('/:id', verifyToken, authorize(['marketing_coordinator']), courseController.updateCourse);
+// 1. CRUD endpoints
+router.post('/', ...adminOnly, courseController.addCourse);
+router.get('/', courseController.listCourses);
+router.get('/all', courseController.listCourses);
+router.get('/:id', courseController.getCourseById);
+router.put('/:id', ...adminOnly, courseController.updateCourse);
+router.delete('/:id', ...adminOnly, courseController.deleteCourse);
+
+// 2. INTAKE MANAGEMENT
+router.put('/:id/intake', ...adminOnly, courseController.updateIntake);
+
+// 3. VERSION CONTROL
+router.put('/:id/curriculum', ...adminOnly, courseController.updateCurriculum);
+router.get('/:id/history', courseController.getCourseHistory);
+
+// 4. ELIGIBILITY CHECK & ENROLLMENT (STUDENT/AUTHED)
+router.post('/:id/check-eligibility', verifyToken, courseController.checkEligibility);
+router.post('/:id/enroll', verifyToken, courseController.enrollCourse);
 
 module.exports = router;
