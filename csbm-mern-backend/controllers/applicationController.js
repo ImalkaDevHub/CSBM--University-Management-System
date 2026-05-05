@@ -23,7 +23,7 @@ const applicationController = {
                 mobileNumber,
                 address: 'Walk-in / Physical Registration',
                 nicPassportNumber: nic,
-                courseName: selectedCourse?.name || 'Manual Enrollment',
+                courseName: selectedCourse?.title || selectedCourse?.name || 'Manual Enrollment',
                 intakeYear: intake,
                 status: 'APPROVED', // Manual registrations are usually approved immediately
                 digitalSignature: 'PHYSICAL_SIGNATURE_ON_FILE',

@@ -7,6 +7,7 @@ const analyticsController = {
     // GET /api/analytics/dashboard
     getDashboardStats: async (req, res) => {
         try {
+            console.log('[Analytics] Fetching dashboard stats...');
             const total = await StudentApplication.countDocuments();
             const approved = await StudentApplication.countDocuments({ status: 'APPROVED' });
             const rejected = await StudentApplication.countDocuments({ status: 'REJECTED' });
@@ -16,12 +17,13 @@ const analyticsController = {
             const approvalRate = total > 0 ? ((approved / total) * 100).toFixed(0) + '%' : '0%';
 
             // Find Top Course
+            console.log('[Analytics] Aggregating top course...');
             const courseStats = await StudentApplication.aggregate([
                 { $group: { _id: "$courseName", count: { $sum: 1 } } },
                 { $sort: { count: -1 } },
                 { $limit: 1 }
             ]);
-            const topCourse = courseStats.length > 0 ? courseStats[0]._id : 'N/A';
+            const topCourse = courseStats.length > 0 ? (courseStats[0]._id || 'N/A') : 'N/A';
 
             // Registrations this month
             const startOfMonth = new Date();
@@ -29,6 +31,7 @@ const analyticsController = {
             startOfMonth.setHours(0, 0, 0, 0);
             const totalThisMonth = await StudentApplication.countDocuments({ createdAt: { $gte: startOfMonth } });
 
+            console.log('[Analytics] Dashboard stats success');
             res.status(200).json({
                 total,
                 approved,
@@ -41,14 +44,15 @@ const analyticsController = {
                 avgProcessTime: '1.2d' // Mocked for now
             });
         } catch (error) {
-            console.error(error);
-            res.status(500).json({ error: 'Failed to fetch dashboard stats' });
+            console.error('[Analytics] Dashboard Error:', error);
+            res.status(500).json({ error: 'Failed to fetch dashboard stats', details: error.message });
         }
     },
 
     // GET /api/analytics/trends
     getTrends: async (req, res) => {
         try {
+            console.log('[Analytics] Fetching trends...');
             // Get last 6 months data
             const last6Months = [];
             for (let i = 5; i >= 0; i--) {
@@ -62,6 +66,7 @@ const analyticsController = {
                 });
             }
 
+            console.log('[Analytics] Querying document counts for last 6 months...');
             const trendData = await Promise.all(last6Months.map(async (m) => {
                 const count = await StudentApplication.countDocuments({
                     createdAt: { $gte: m.start, $lte: m.end }
@@ -69,13 +74,14 @@ const analyticsController = {
                 return count;
             }));
 
+            console.log('[Analytics] Trends success');
             res.status(200).json({
                 labels: last6Months.map(m => m.month),
                 monthlyData: trendData
             });
         } catch (error) {
-            console.error(error);
-            res.status(500).json({ error: 'Failed to fetch trends' });
+            console.error('[Analytics] Trends Error:', error);
+            res.status(500).json({ error: 'Failed to fetch trends', details: error.message });
         }
     },
 

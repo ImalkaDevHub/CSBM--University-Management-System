@@ -17,7 +17,11 @@ const workshopSchema = new Schema({
     type: Schema.Types.ObjectId, 
     ref: 'User' 
   },
-  image: { type: String }
+  image: { type: String },
+  agenda: [{
+    time: { type: String },
+    title: { type: String }
+  }]
 }, { timestamps: true });
 
 // Customize toJSON to return both `id` and `_id`
