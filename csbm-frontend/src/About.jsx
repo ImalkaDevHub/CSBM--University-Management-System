@@ -50,7 +50,7 @@ export default function About() {
             <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/95 backdrop-blur-md shadow-sm transition-shadow duration-300">
                 <div className="mx-auto flex h-16 max-w-[1280px] items-center justify-between px-4 sm:px-6 lg:px-8">
                     <Link to="/" className="flex items-center">
-                        <Logo className="h-12" theme="light" />
+                        <Logo className="h-10" theme="light" />
                     </Link>
                     
                     <nav className="hidden md:flex items-center gap-8">
@@ -64,7 +64,16 @@ export default function About() {
                         <Link to="/login" className="hidden sm:inline-block text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors">
                             Log In
                         </Link>
-                        <Link to="/register" className="inline-flex h-9 items-center justify-center rounded-full bg-blue-600 px-5 text-sm font-semibold text-white hover:bg-blue-700 transition-colors shadow-sm">
+                        <Link 
+                            to="/register" 
+                            style={{
+                                background: '#2563eb',
+                                color: '#ffffff',
+                                textDecoration: 'none',
+                                boxShadow: '0 2px 8px rgba(37, 99, 235, 0.35)',
+                            }}
+                            className="inline-flex h-9 items-center justify-center rounded-full px-5 text-sm font-semibold text-white hover:bg-blue-700 transition-all shadow-sm"
+                        >
                             Sign Up
                         </Link>
                     </div>
@@ -73,34 +82,18 @@ export default function About() {
 
             <main className="flex-1">
                 {/* HERO SECTION */}
-                <section className="relative w-full h-[85vh] min-h-[600px] flex items-end pb-16">
+                <section className="relative w-full h-[85vh] min-h-[600px] flex items-end pb-16 overflow-hidden">
                     <div 
                         className="absolute inset-0 z-0 bg-cover bg-center"
                         style={{ backgroundImage: "url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=2070&auto=format&fit=crop')" }}
                     />
-                    <div className="absolute inset-0 z-10 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
-                    
-                    {/* Floating Hero Elements */}
-                    <div className="absolute inset-0 z-15 overflow-hidden pointer-events-none">
-                        {/* Element 1 */}
-                        <motion.div
-                            className="absolute top-20 right-20 w-64 h-64 rounded-full bg-blue-500/10 backdrop-blur-sm border border-blue-400/20"
-                            animate={{ y: [0, -20, 0], rotate: [0, 5, 0] }}
-                            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                        />
-                        {/* Element 2 */}
-                        <motion.div
-                            className="absolute top-1/2 right-10 w-32 h-32 rounded-full bg-yellow-400/10 border border-yellow-400/20"
-                            animate={{ y: [0, 15, 0], rotate: [0, -8, 0] }}
-                            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                        />
-                        {/* Element 3 */}
-                        <motion.div
-                            className="absolute bottom-20 left-1/3 w-20 h-20 rounded-full bg-sky-400/15 border border-sky-400/20"
-                            animate={{ y: [0, -12, 0] }}
-                            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-                        />
-                    </div>
+                    {/* Subtle dark gradient overlay: darkest on left behind text, fading to transparent on right */}
+                    <div 
+                        className="absolute inset-0 z-10" 
+                        style={{
+                            background: 'linear-gradient(90deg, rgba(15, 23, 42, 0.85) 0%, rgba(15, 23, 42, 0.65) 42%, rgba(15, 23, 42, 0.25) 75%, transparent 100%)',
+                        }}
+                    />
 
                     <div className="relative z-20 w-full max-w-[1280px] mx-auto px-6 lg:px-16">
                         <div className="max-w-2xl text-left pb-16">
@@ -109,17 +102,17 @@ export default function About() {
                                 initial={{ opacity: 0, y: 30 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.8 }}
-                                className="text-6xl md:text-7xl font-black leading-tight tracking-tight"
+                                className="text-6xl md:text-7xl font-black leading-tight tracking-tight drop-shadow-md"
                             >
                                 <div className="text-white">Shaping Futures,</div>
-                                <div className="bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent pb-2">Building Leaders</div>
+                                <div className="bg-gradient-to-r from-yellow-400 to-amber-500 bg-clip-text text-transparent pb-2">Building Leaders</div>
                             </motion.h1>
                             
                             <motion.p 
                                 initial={{ opacity: 0, y: 30 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.8, delay: 0.1 }}
-                                className="text-lg text-white/80 mt-6 max-w-xl leading-relaxed"
+                                className="text-lg text-slate-100 mt-6 max-w-xl leading-relaxed drop-shadow-sm font-normal"
                             >
                                 CSBM is dedicated to fostering excellence in IT, Science, Business, and Management. We empower our students to lead in an ever-evolving global landscape through innovation and rigorous academic inquiry.
                             </motion.p>
@@ -131,8 +124,21 @@ export default function About() {
                                 className="mt-8 flex gap-4"
                             >
                                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} transition={{ duration: 0.2 }}>
-                                    <Link to="/programs" className="bg-blue-600 text-white rounded-lg px-8 py-4 font-bold text-lg hover:bg-blue-700 transition-colors shadow-lg block">
-                                        Explore Programs
+                                    <Link 
+                                        to="/programs" 
+                                        style={{
+                                            background: 'linear-gradient(135deg, #facc15 0%, #f59e0b 100%)',
+                                            color: '#0f172a',
+                                            boxShadow: '0 8px 24px rgba(245, 158, 11, 0.4), 0 0 20px rgba(250, 204, 21, 0.25)',
+                                            textDecoration: 'none',
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                        }}
+                                        className="rounded-full px-8 py-4 font-black text-lg text-slate-900 shadow-xl transition-all hover:brightness-105"
+                                    >
+                                        <span style={{ color: '#0f172a' }} className="font-black text-slate-900">Explore Programs</span>
+                                        <span style={{ color: '#0f172a' }} className="ml-2 font-black text-slate-900">→</span>
                                     </Link>
                                 </motion.div>
                             </motion.div>
@@ -506,21 +512,37 @@ export default function About() {
                         </div>
 
                         <div className="relative z-10">
-                            <h2 className="text-4xl sm:text-5xl font-black text-white leading-tight tracking-tight">
+                            <h2 className="text-4xl sm:text-5xl font-black text-white leading-tight tracking-tight drop-shadow-sm">
                                 Ready to Begin Your Journey?
                             </h2>
-                            <p className="text-white/80 text-lg sm:text-xl mt-4 max-w-2xl mx-auto font-medium">
+                            <p className="text-white/90 text-lg sm:text-xl mt-6 max-w-2xl mx-auto font-normal leading-relaxed">
                                 Applications for the next intake are now open. Join a community that celebrates your potential and supports your dreams.
                             </p>
-                            <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-                                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} transition={{ duration: 0.2 }}>
-                                    <button onClick={() => handleApplyNow()} className="bg-white text-blue-600 font-black rounded-full px-10 py-4 text-lg hover:bg-blue-50 hover:scale-105 transition-all shadow-xl block">
-                                        Apply Now →
+                            <div className="mt-12 sm:mt-14 flex flex-col sm:flex-row gap-5 justify-center items-center">
+                                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} transition={{ duration: 0.2 }} className="w-full sm:w-auto">
+                                    <button 
+                                        onClick={() => handleApplyNow()} 
+                                        style={{ color: '#2563eb' }}
+                                        className="w-full sm:w-auto inline-flex items-center justify-center bg-white font-black rounded-full px-10 py-4 text-lg hover:bg-blue-50 transition-all shadow-xl cursor-pointer"
+                                    >
+                                        <span style={{ color: '#2563eb' }} className="font-black text-blue-600">Apply Now</span>
+                                        <span style={{ color: '#2563eb' }} className="ml-2 font-black text-blue-600">→</span>
                                     </button>
                                 </motion.div>
-                                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} transition={{ duration: 0.2 }}>
-                                    <Link to="/contact" className="bg-transparent border-2 border-white/30 text-white font-bold rounded-full px-10 py-4 text-lg hover:bg-white/10 transition-all block">
-                                        Contact Us
+                                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} transition={{ duration: 0.2 }} className="w-full sm:w-auto">
+                                    <Link 
+                                        to="/contact" 
+                                        style={{
+                                            color: '#ffffff',
+                                            borderColor: 'rgba(255, 255, 255, 0.85)',
+                                            borderWidth: '2px',
+                                            borderStyle: 'solid',
+                                            background: 'transparent',
+                                            textDecoration: 'none',
+                                        }}
+                                        className="w-full sm:w-auto inline-flex items-center justify-center font-bold rounded-full px-10 py-4 text-lg text-white hover:bg-white/15 hover:border-white transition-all shadow-sm"
+                                    >
+                                        <span style={{ color: '#ffffff' }} className="font-bold text-white">Contact Us</span>
                                     </Link>
                                 </motion.div>
                             </div>

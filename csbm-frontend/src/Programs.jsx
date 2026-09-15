@@ -164,9 +164,9 @@ export default function Programs() {
         <div className="flex min-h-screen w-full flex-col font-sans bg-white text-slate-900 antialiased overflow-x-hidden">
             {/* NAVBAR */}
             <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/95 backdrop-blur-md shadow-sm transition-shadow duration-300">
-                <div className="mx-auto flex h-16 max-w-[1280px] items-center justify-between px-4 sm:px-6 lg:px-8">
+                <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 lg:px-8">
                     <Link to="/" className="flex items-center">
-                        <Logo className="h-12" theme="light" />
+                        <Logo className="h-10" theme="light" />
                     </Link>
                     
                     <nav className="hidden md:flex items-center gap-8">
@@ -180,7 +180,16 @@ export default function Programs() {
                         <Link to="/login" className="hidden sm:inline-block text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors">
                             Log In
                         </Link>
-                        <Link to="/register" className="inline-flex h-9 items-center justify-center rounded-full bg-blue-600 px-5 text-sm font-semibold text-white hover:bg-blue-700 transition-colors shadow-sm">
+                        <Link 
+                            to="/register" 
+                            style={{
+                                background: '#1e3a8a',
+                                color: '#ffffff',
+                                textDecoration: 'none',
+                                boxShadow: '0 2px 8px rgba(30, 58, 138, 0.35)',
+                            }}
+                            className="inline-flex h-9 items-center justify-center rounded-full px-5 text-sm font-semibold text-white hover:bg-blue-900 transition-all shadow-sm"
+                        >
                             Sign Up
                         </Link>
                     </div>
@@ -189,36 +198,51 @@ export default function Programs() {
 
             <main className="flex-1">
                 {/* SECTION 1 — Hero (Photo Background) */}
-                <section className="relative w-full h-[85vh] min-h-[600px] flex items-end pb-16 sm:pb-24">
+                <section className="relative w-full h-[85vh] min-h-[600px] flex items-end pb-16 sm:pb-24 overflow-hidden">
                     <div 
                         className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
                         style={{ backgroundImage: `url(${heroImage})` }}
                     />
-                    <div className="absolute inset-0 z-10 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
-                    <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/60 via-transparent to-transparent sm:hidden" />
+                    {/* Subtle dark gradient overlay: darkest on left behind text, fading to transparent on right */}
+                    <div 
+                        className="absolute inset-0 z-10 pointer-events-none" 
+                        style={{
+                            background: 'linear-gradient(90deg, rgba(15, 23, 42, 0.85) 0%, rgba(15, 23, 42, 0.65) 42%, rgba(15, 23, 42, 0.25) 75%, transparent 100%)',
+                        }}
+                    />
+                    <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/60 via-transparent to-transparent sm:hidden pointer-events-none" />
                     
                     <motion.div 
                          initial="hidden"
                          animate="visible"
                          variants={staggerContainer}
-                         className="relative z-20 w-full max-w-[1280px] mx-auto px-6 lg:px-8 flex justify-start"
+                         className="relative z-20 w-full max-w-7xl mx-auto px-6 lg:px-8 flex justify-start"
                     >
-                        <div className="max-w-2xl text-left sm:text-left text-center mx-auto sm:mx-0">
-
-                            
-                            <motion.h1 variants={fadeInUp} className="text-4xl sm:text-5xl md:text-6xl font-black leading-tight sm:leading-tight">
+                        <div className="max-w-2xl text-left">
+                            <motion.h1 variants={fadeInUp} className="text-4xl sm:text-5xl md:text-6xl font-black leading-tight sm:leading-tight drop-shadow-md">
                                 <div className="text-white">Our Programs,</div>
-                                <div className="bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent pb-2">Your Future</div>
+                                <div className="bg-gradient-to-r from-yellow-400 to-amber-500 bg-clip-text text-transparent pb-2">Your Future</div>
                             </motion.h1>
                             
-                            <motion.p variants={fadeInUp} className="text-base sm:text-lg text-white/80 mt-4 sm:mt-6 max-w-xl mx-auto sm:mx-0 leading-relaxed font-light">
+                            <motion.p variants={fadeInUp} className="text-base sm:text-lg text-slate-100 mt-4 sm:mt-6 max-w-xl leading-relaxed font-normal drop-shadow-sm">
                                 Empowering the next generation of global leaders through industry-aligned curriculum and hands-on specialized training.
                             </motion.p>
                             
-                            <motion.div variants={fadeInUp} className="mt-8 sm:mt-10 flex flex-col sm:flex-row gap-4 justify-center sm:justify-start">
-                                <button className="bg-blue-600 text-white rounded-lg px-8 py-4 font-bold text-lg hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20">
-                                    View Prospectus <span className="text-xl leading-none align-middle ml-1">↓</span>
-                                </button>
+                            <motion.div variants={fadeInUp} className="mt-8 sm:mt-10 flex flex-col sm:flex-row gap-4 justify-start">
+                                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} transition={{ duration: 0.2 }}>
+                                    <button 
+                                        style={{
+                                            background: 'linear-gradient(135deg, #facc15 0%, #f59e0b 100%)',
+                                            color: '#0f172a',
+                                            boxShadow: '0 8px 24px rgba(245, 158, 11, 0.4), 0 0 20px rgba(250, 204, 21, 0.25)',
+                                            border: 'none',
+                                        }}
+                                        className="inline-flex items-center justify-center font-black rounded-full px-8 py-4 text-lg text-slate-900 shadow-xl transition-all hover:brightness-105 cursor-pointer"
+                                    >
+                                        <span style={{ color: '#0f172a' }} className="font-black text-slate-900">View Prospectus</span>
+                                        <span style={{ color: '#0f172a' }} className="text-xl leading-none align-middle ml-2 font-black text-slate-900">↓</span>
+                                    </button>
+                                </motion.div>
                             </motion.div>
                         </div>
                     </motion.div>
@@ -350,7 +374,7 @@ export default function Programs() {
                 </section>
 
                 {/* SECTION 4 — CTA Banner */}
-                <section className="bg-white py-12 px-6">
+                <section className="bg-white pt-12 pb-24 sm:pb-32 px-6">
                     <div className="bg-blue-600 rounded-[2.5rem] max-w-5xl mx-auto py-16 px-8 sm:px-12 text-center relative overflow-hidden shadow-2xl shadow-blue-900/20">
                         {/* Decorative background shapes */}
                         <div className="absolute top-0 right-0 -translate-y-12 translate-x-1/3">
@@ -361,16 +385,32 @@ export default function Programs() {
                         </div>
 
                         <div className="relative z-10">
-                            <h2 className="text-4xl sm:text-5xl font-black text-white leading-tight">Ready to Start Your <br className="hidden sm:block"/>Academic Journey?</h2>
-                            <p className="text-blue-100 text-lg sm:text-xl mt-6 max-w-2xl mx-auto">
+                            <h2 className="text-4xl sm:text-5xl font-black text-white leading-snug sm:leading-snug drop-shadow-sm">Ready to Start Your <br className="hidden sm:block"/>Academic Journey?</h2>
+                            <p className="text-blue-100 text-lg sm:text-xl mt-6 max-w-2xl mx-auto font-normal leading-relaxed">
                                 Apply today and join hundreds of students already thriving at CSBM Campus. Your future begins here.
                             </p>
-                            <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-                                <button onClick={() => handleApplyNow()} className="bg-white text-blue-600 font-black rounded-full px-10 py-4 text-lg hover:bg-blue-50 hover:scale-105 transition-all shadow-xl">
-                                    Apply Now →
+                            <div className="mt-12 sm:mt-14 flex flex-col sm:flex-row gap-5 justify-center items-center">
+                                <button 
+                                    onClick={() => handleApplyNow()} 
+                                    style={{ color: '#2563eb' }}
+                                    className="inline-flex items-center justify-center bg-white font-black rounded-full px-10 py-4 text-lg hover:bg-blue-50 transition-all shadow-xl cursor-pointer"
+                                >
+                                    <span style={{ color: '#2563eb' }} className="font-black text-blue-600">Apply Now</span>
+                                    <span style={{ color: '#2563eb' }} className="ml-2 font-black text-blue-600">→</span>
                                 </button>
-                                <Link to="/contact" className="bg-transparent border-2 border-white/30 text-white font-bold rounded-full px-10 py-4 text-lg hover:bg-white/10 transition-all">
-                                    Contact Admissions
+                                <Link 
+                                    to="/contact" 
+                                    style={{
+                                        color: '#ffffff',
+                                        borderColor: 'rgba(255, 255, 255, 0.85)',
+                                        borderWidth: '2px',
+                                        borderStyle: 'solid',
+                                        background: 'transparent',
+                                        textDecoration: 'none',
+                                    }}
+                                    className="inline-flex items-center justify-center font-bold rounded-full px-10 py-4 text-lg text-white hover:bg-white/15 hover:border-white transition-all shadow-sm"
+                                >
+                                    <span style={{ color: '#ffffff' }} className="font-bold text-white">Contact Admissions</span>
                                 </Link>
                             </div>
                         </div>

@@ -87,9 +87,9 @@ export default function ContactUs() {
         <div className="flex min-h-screen w-full flex-col font-sans bg-white text-slate-900 antialiased overflow-x-hidden">
             {/* NAVBAR */}
             <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/95 backdrop-blur-md shadow-sm transition-shadow duration-300">
-                <div className="mx-auto flex h-16 max-w-[1280px] items-center justify-between px-4 sm:px-6 lg:px-8">
+                <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 lg:px-8">
                     <Link to="/" className="flex items-center">
-                        <Logo className="h-12" theme="light" />
+                        <Logo className="h-10" theme="light" />
                     </Link>
                     
                     <nav className="hidden md:flex items-center gap-8">
@@ -103,7 +103,16 @@ export default function ContactUs() {
                         <Link to="/login" className="hidden sm:inline-block text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors">
                             Log In
                         </Link>
-                        <Link to="/register" className="inline-flex h-9 items-center justify-center rounded-full bg-blue-600 px-5 text-sm font-semibold text-white hover:bg-blue-700 transition-colors shadow-sm">
+                        <Link 
+                            to="/register" 
+                            style={{
+                                background: '#1e3a8a',
+                                color: '#ffffff',
+                                textDecoration: 'none',
+                                boxShadow: '0 2px 8px rgba(30, 58, 138, 0.35)',
+                            }}
+                            className="inline-flex h-9 items-center justify-center rounded-full px-5 text-sm font-semibold text-white hover:bg-blue-900 transition-all shadow-sm"
+                        >
                             Sign Up
                         </Link>
                     </div>
@@ -112,12 +121,18 @@ export default function ContactUs() {
 
             <main className="flex-1">
                 {/* HERO SECTION */}
-                <section className="relative w-full h-[70vh] min-h-[500px] flex items-end pb-16">
+                <section className="relative w-full h-[70vh] min-h-[500px] flex items-end pb-16 overflow-hidden">
                     <div 
                         className="absolute inset-0 z-0 bg-cover bg-center"
                         style={{ backgroundImage: "url('https://images.unsplash.com/photo-1562774053-701939374585?w=1600&auto=format&fit=crop')" }}
                     />
-                    <div className="absolute inset-0 z-10 bg-gradient-to-r from-black/70 via-black/50 to-transparent" />
+                    {/* Subtle dark gradient overlay: darkest on left behind text, fading to transparent on right */}
+                    <div 
+                        className="absolute inset-0 z-10 pointer-events-none" 
+                        style={{
+                            background: 'linear-gradient(90deg, rgba(15, 23, 42, 0.88) 0%, rgba(15, 23, 42, 0.7) 42%, rgba(15, 23, 42, 0.25) 75%, transparent 100%)',
+                        }}
+                    />
                     
                     <motion.div 
                         initial="hidden"
@@ -126,17 +141,15 @@ export default function ContactUs() {
                             hidden: { opacity: 0 },
                             visible: { opacity: 1, transition: { staggerChildren: 0.2, delayChildren: 0.3 } }
                         }}
-                        className="relative z-20 w-full max-w-[1280px] mx-auto px-6 lg:px-16"
+                        className="relative z-20 w-full max-w-7xl mx-auto px-6 lg:px-8"
                     >
                         <div className="max-w-2xl text-left">
-
-                            
-                            <motion.h1 variants={fadeInUp} className="text-5xl md:text-6xl font-black leading-tight">
+                            <motion.h1 variants={fadeInUp} className="text-5xl md:text-6xl font-black leading-tight drop-shadow-md">
                                 <div className="text-white">Contact</div>
-                                <div className="bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent pb-2">Our Team</div>
+                                <div className="bg-gradient-to-r from-yellow-400 to-amber-500 bg-clip-text text-transparent pb-2">Our Team</div>
                             </motion.h1>
                             
-                            <motion.p variants={fadeInUp} className="text-lg text-white/80 mt-6 max-w-xl">
+                            <motion.p variants={fadeInUp} className="text-lg text-slate-100 mt-6 max-w-xl font-normal leading-relaxed drop-shadow-sm">
                                 We're here to help. Reach out to us for admissions, academic inquiries, or general campus information.
                             </motion.p>
                         </div>
@@ -153,8 +166,8 @@ export default function ContactUs() {
                         className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6"
                     >
                         {/* Card 1 */}
-                        <motion.div variants={fadeInUp} className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm hover:shadow-md hover:border-blue-200 transition-all text-center">
-                            <div className="bg-blue-50 rounded-full w-14 h-14 flex items-center justify-center text-2xl mx-auto">
+                        <motion.div variants={fadeInUp} className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm hover:shadow-md hover:border-slate-300 transition-all text-center">
+                            <div className="bg-amber-50 border border-amber-200/60 rounded-full w-14 h-14 flex items-center justify-center text-2xl mx-auto">
                                 📍
                             </div>
                             <h3 className="font-black text-slate-900 text-xl mt-4">Visit Us</h3>
@@ -164,23 +177,35 @@ export default function ContactUs() {
                             <a href="#" className="text-blue-600 font-semibold text-sm mt-4 block hover:underline">Get Directions →</a>
                         </motion.div>
 
-                        {/* Card 2 (Featured) */}
-                        <motion.div variants={fadeInUp} className="bg-blue-600 text-white rounded-2xl p-8 shadow-lg shadow-blue-200 text-center transform md:-translate-y-2">
-                            <div className="bg-white/20 rounded-full w-14 h-14 flex items-center justify-center text-2xl mx-auto backdrop-blur-sm">
+                        {/* Card 2 (Featured - Deep CSBM Navy) */}
+                        <motion.div 
+                            variants={fadeInUp} 
+                            style={{ background: '#1e3a8a' }}
+                            className="text-white rounded-2xl p-8 shadow-xl shadow-blue-950/20 text-center transform md:-translate-y-2 border border-blue-800/40"
+                        >
+                            <div className="bg-white/15 border border-white/20 rounded-full w-14 h-14 flex items-center justify-center text-2xl mx-auto backdrop-blur-sm">
                                 📞
                             </div>
                             <h3 className="font-black text-white text-xl mt-4">Call Us</h3>
                             <p className="text-white mt-2 font-semibold tracking-wide">+94 11 234 5678</p>
                             <p className="text-white/80 tracking-wide">+94 77 234 5678</p>
                             <p className="text-white/70 text-sm mt-2">Mon–Fri: 8:00 AM – 5:00 PM</p>
-                            <a href="tel:+94112345678" className="bg-white text-blue-600 font-bold rounded-full px-5 py-2 text-sm mt-4 inline-block hover:bg-blue-50 transition-colors shadow-sm">
-                                Call Now →
+                            <a 
+                                href="tel:+94112345678" 
+                                style={{
+                                    background: 'linear-gradient(135deg, #facc15 0%, #f59e0b 100%)',
+                                    color: '#0f172a',
+                                    textDecoration: 'none',
+                                }}
+                                className="font-bold rounded-full px-6 py-2.5 text-sm mt-4 inline-block hover:brightness-105 transition-all shadow-md"
+                            >
+                                <span style={{ color: '#0f172a' }} className="font-black text-slate-900">Call Now →</span>
                             </a>
                         </motion.div>
 
                         {/* Card 3 */}
-                        <motion.div variants={fadeInUp} className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm hover:shadow-md hover:border-blue-200 transition-all text-center">
-                            <div className="bg-blue-50 rounded-full w-14 h-14 flex items-center justify-center text-2xl mx-auto">
+                        <motion.div variants={fadeInUp} className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm hover:shadow-md hover:border-slate-300 transition-all text-center">
+                            <div className="bg-blue-50 border border-blue-200/60 rounded-full w-14 h-14 flex items-center justify-center text-2xl mx-auto text-blue-900">
                                 ✉️
                             </div>
                             <h3 className="font-black text-slate-900 text-xl mt-4">Email Us</h3>
@@ -451,12 +476,28 @@ export default function ContactUs() {
                             <p className="text-white/80 text-lg sm:text-xl mt-4 max-w-2xl mx-auto">
                                 Our admissions team is ready to help you find the right program.
                             </p>
-                            <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-                                <button onClick={() => handleApplyNow()} className="bg-white text-blue-600 font-black rounded-full px-10 py-4 text-lg hover:bg-blue-50 hover:scale-105 transition-all shadow-xl">
-                                    Apply Now →
+                            <div className="mt-12 sm:mt-14 flex flex-col sm:flex-row gap-5 justify-center items-center">
+                                <button 
+                                    onClick={() => handleApplyNow()} 
+                                    style={{ color: '#2563eb' }}
+                                    className="inline-flex items-center justify-center bg-white font-black rounded-full px-10 py-4 text-lg hover:bg-blue-50 transition-all shadow-xl cursor-pointer"
+                                >
+                                    <span style={{ color: '#2563eb' }} className="font-black text-blue-600">Apply Now</span>
+                                    <span style={{ color: '#2563eb' }} className="ml-2 font-black text-blue-600">→</span>
                                 </button>
-                                <a href="tel:+94112345678" className="bg-transparent border-2 border-white/30 text-white font-bold rounded-full px-10 py-4 text-lg hover:bg-white/10 transition-all">
-                                    Call Us Now
+                                <a 
+                                    href="tel:+94112345678" 
+                                    style={{
+                                        color: '#ffffff',
+                                        borderColor: 'rgba(255, 255, 255, 0.85)',
+                                        borderWidth: '2px',
+                                        borderStyle: 'solid',
+                                        background: 'transparent',
+                                        textDecoration: 'none',
+                                    }}
+                                    className="inline-flex items-center justify-center font-bold rounded-full px-10 py-4 text-lg text-white hover:bg-white/15 hover:border-white transition-all shadow-sm"
+                                >
+                                    <span style={{ color: '#ffffff' }} className="font-bold text-white">Call Us Now</span>
                                 </a>
                             </div>
                         </div>

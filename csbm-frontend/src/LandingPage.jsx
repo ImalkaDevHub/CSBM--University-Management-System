@@ -338,8 +338,19 @@ const LandingPage = () => {
                             className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
                         >
                             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                                <Link to="/register" className="w-full sm:w-auto inline-flex items-center justify-center rounded-full bg-blue-600 px-8 py-4 font-bold text-lg text-white shadow-lg shadow-blue-900/30 hover:bg-blue-700 transition-colors">
-                                    Start Your Application <span className="ml-2">→</span>
+                                <Link 
+                                    to="/register" 
+                                    style={{
+                                        background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                                        color: '#ffffff',
+                                        boxShadow: '0 4px 20px rgba(37, 99, 235, 0.5), 0 0 30px rgba(59, 130, 246, 0.35)',
+                                        border: '1px solid rgba(255, 255, 255, 0.3)',
+                                        textDecoration: 'none',
+                                    }}
+                                    className="w-full sm:w-auto inline-flex items-center justify-center rounded-full px-8 py-4 font-bold text-lg text-white shadow-xl transition-all duration-300 hover:brightness-110"
+                                >
+                                    <span style={{ color: '#ffffff' }} className="font-bold text-white">Start Your Application</span>
+                                    <span style={{ color: '#ffffff' }} className="ml-2.5 font-bold text-white">→</span>
                                 </Link>
                             </motion.div>
                             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
@@ -612,39 +623,88 @@ const LandingPage = () => {
                     whileInView="visible"
                     viewport={{ once: true, margin: "-50px" }}
                     variants={fadeInUp}
-                    className="px-6 pb-24"
+                    className="relative bg-slate-900 py-20 px-6 sm:px-8 overflow-hidden"
                 >
+                    {/* Top ambient highlight line separating section 5 and 6 */}
+                    <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent" />
+
                     <div
-                        className="py-20 px-8 rounded-3xl max-w-6xl mx-auto text-center relative overflow-hidden"
+                        className="py-16 sm:py-20 px-6 sm:px-12 rounded-3xl max-w-5xl mx-auto text-center relative overflow-hidden"
                         style={{
-                            background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #0f172a 100%)',
-                            boxShadow: '0 25px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.06)',
+                            background: 'linear-gradient(135deg, #1e1b4b 0%, #0f172a 45%, #1e293b 85%, #0f172a 100%)',
+                            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 35px rgba(59, 130, 246, 0.15)',
+                            border: '1px solid rgba(255, 255, 255, 0.15)',
                         }}
                     >
-                        {/* Decorative glow blobs */}
-                        <div className="absolute top-0 right-0 -mt-10 -mr-10 w-72 h-72 rounded-full bg-blue-600/20 blur-3xl pointer-events-none"></div>
-                        <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-72 h-72 rounded-full bg-indigo-600/15 blur-3xl pointer-events-none"></div>
+                        {/* Subtle top inner glow line */}
+                        <div className="absolute top-0 left-1/4 right-1/4 h-[1px] bg-gradient-to-r from-transparent via-blue-400/50 to-transparent" />
+
+                        {/* Decorative vibrant glow blobs */}
+                        <div className="absolute top-0 right-0 -mt-16 -mr-16 w-80 h-80 rounded-full bg-blue-500/20 blur-3xl pointer-events-none"></div>
+                        <div className="absolute bottom-0 left-0 -mb-16 -ml-16 w-80 h-80 rounded-full bg-purple-600/20 blur-3xl pointer-events-none"></div>
 
                         <div className="relative z-10">
-                            <h2 className="text-4xl sm:text-5xl font-black text-white tracking-tight">Ready to Begin Your Journey?</h2>
-                            <p className="text-slate-400 text-xl mt-6 max-w-2xl mx-auto font-medium">
+                            {/* Pill Badge */}
+                            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-500/15 border border-blue-400/30 text-blue-300 text-xs sm:text-sm font-semibold mb-6 tracking-wide backdrop-blur-md">
+                                <span>🚀 Next Intake Now Enrolling</span>
+                            </div>
+
+                            <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight drop-shadow-md">
+                                Ready to Begin Your Journey?
+                            </h2>
+                            <p className="text-slate-200 text-base sm:text-xl mt-4 max-w-2xl mx-auto font-normal leading-relaxed">
                                 Join 2,500+ students already building their future at CSBM Campus.
                             </p>
-                            <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center items-center">
+
+                            <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row gap-4 justify-center items-center">
+                                {/* Primary CTA: Apply Now */}
                                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full sm:w-auto">
                                     <Link
                                         to="/register"
-                                        className="block sm:inline-block font-black rounded-full px-10 py-4 text-lg text-white transition-all"
-                                        style={{ background: 'linear-gradient(135deg, #2563eb, #7c3aed)', boxShadow: '0 8px 24px rgba(37,99,235,0.35)' }}
+                                        style={{
+                                            background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
+                                            color: '#ffffff',
+                                            boxShadow: '0 4px 20px rgba(124, 58, 237, 0.5), 0 0 25px rgba(37, 99, 235, 0.4)',
+                                            border: '1px solid rgba(255, 255, 255, 0.3)',
+                                            textDecoration: 'none',
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                        }}
+                                        className="w-full sm:w-auto font-bold rounded-full px-10 py-4 text-lg text-white shadow-xl transition-all hover:brightness-110"
                                     >
-                                        Apply Now →
+                                        <span style={{ color: '#ffffff' }} className="font-bold text-white">Apply Now</span>
+                                        <span style={{ color: '#ffffff' }} className="ml-2.5 font-bold text-white">→</span>
                                     </Link>
                                 </motion.div>
+
+                                {/* Secondary CTA: Contact Us */}
                                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full sm:w-auto">
-                                    <Link to="/contact" className="block sm:inline-block border border-slate-600 bg-white/5 backdrop-blur-sm text-slate-300 font-bold rounded-full px-10 py-4 text-lg hover:bg-white/10 hover:text-white transition-all">
-                                        Contact Us
+                                    <Link 
+                                        to="/contact" 
+                                        style={{
+                                            background: 'rgba(255, 255, 255, 0.08)',
+                                            color: '#ffffff',
+                                            border: '2px solid rgba(255, 255, 255, 0.5)',
+                                            backdropFilter: 'blur(12px)',
+                                            WebkitBackdropFilter: 'blur(12px)',
+                                            textDecoration: 'none',
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                        }}
+                                        className="w-full sm:w-auto font-bold rounded-full px-10 py-4 text-lg text-white shadow-md transition-all hover:bg-white/20 hover:border-white"
+                                    >
+                                        <span style={{ color: '#ffffff' }} className="font-bold text-white">Contact Us</span>
                                     </Link>
                                 </motion.div>
+                            </div>
+
+                            {/* Trust badges */}
+                            <div className="mt-8 pt-6 border-t border-white/10 flex flex-wrap items-center justify-center gap-6 text-xs sm:text-sm text-slate-300 font-medium">
+                                <span className="flex items-center gap-1.5"><span className="text-emerald-400 font-bold">✓</span> Fast Online Application</span>
+                                <span className="flex items-center gap-1.5"><span className="text-emerald-400 font-bold">✓</span> Flexible Payment Plans</span>
+                                <span className="flex items-center gap-1.5"><span className="text-emerald-400 font-bold">✓</span> 1-on-1 Academic Counseling</span>
                             </div>
                         </div>
                     </div>
