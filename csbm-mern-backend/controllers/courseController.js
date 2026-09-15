@@ -18,7 +18,22 @@ const courseController = {
     listCourses: async (req, res) => {
         try {
             const courses = await Course.find();
-            res.status(200).json(courses);
+            const mapped = courses.map(c => {
+                const doc = c.toJSON ? c.toJSON() : (c.toObject ? c.toObject() : c);
+                return {
+                    ...doc,
+                    id: doc._id || doc.id,
+                    name: doc.name || doc.title,
+                    title: doc.title || doc.name,
+                    courseFee: doc.courseFee ?? doc.fees ?? doc.price,
+                    fees: doc.fees ?? doc.courseFee ?? doc.price,
+                    streamReq: doc.streamReq || doc.eligibility?.requiredStream || 'Any',
+                    minALPasses: doc.minALPasses != null ? doc.minALPasses : (doc.eligibility?.minimumPasses ?? 2),
+                    intakeDate: doc.intakeDate || doc.nextIntakeDate,
+                    intakeStatus: doc.intakeStatus || 'OPEN'
+                };
+            });
+            res.status(200).json(mapped);
         } catch (error) {
             res.status(500).json({ error: 'Failed to fetch courses', details: error.message });
         }
@@ -29,7 +44,20 @@ const courseController = {
         try {
             const course = await Course.findById(req.params.id);
             if (!course) return res.status(404).json({ error: 'Course not found' });
-            res.status(200).json(course);
+            const doc = course.toJSON ? course.toJSON() : (course.toObject ? course.toObject() : course);
+            const mapped = {
+                ...doc,
+                id: doc._id || doc.id,
+                name: doc.name || doc.title,
+                title: doc.title || doc.name,
+                courseFee: doc.courseFee ?? doc.fees ?? doc.price,
+                fees: doc.fees ?? doc.courseFee ?? doc.price,
+                streamReq: doc.streamReq || doc.eligibility?.requiredStream || 'Any',
+                minALPasses: doc.minALPasses != null ? doc.minALPasses : (doc.eligibility?.minimumPasses ?? 2),
+                intakeDate: doc.intakeDate || doc.nextIntakeDate,
+                intakeStatus: doc.intakeStatus || 'OPEN'
+            };
+            res.status(200).json(mapped);
         } catch (error) {
             res.status(500).json({ error: 'Failed to fetch course', details: error.message });
         }
@@ -126,16 +154,60 @@ const courseController = {
 
     // 4. ELIGIBILITY CHECK
     // POST /api/courses/check-eligibility
-    // accepts { courseId, edLevel, results, age }
+    // accepts { courseId, stream, passes } OR { courseId, edLevel, results, age }
     checkEligibility: async (req, res) => {
         try {
-            const { courseId, edLevel, results, age } = req.body;
+            const { courseId, stream, passes, edLevel, results, age } = req.body;
             const course = await Course.findById(courseId);
             
             if (!course) {
                 return res.status(404).json({ error: 'Course not found' });
             }
 
+            const courseName = course.name || course.title;
+            const fee = course.courseFee ?? course.fees ?? course.price ?? 0;
+
+            // Scenario A: Automated Stream & Passes check (Course Catalog UI)
+            if (stream !== undefined || passes !== undefined) {
+                const numPasses = parseInt(passes) || 0;
+                const reqPasses = course.eligibility?.minimumPasses ?? course.minALPasses ?? 2;
+                const reqStream = course.eligibility?.requiredStream || course.streamReq || 'Any';
+
+                const streamMatch = reqStream === 'Any' || !stream || stream.toLowerCase() === reqStream.toLowerCase();
+                const passesMatch = numPasses >= reqPasses;
+
+                if (streamMatch && passesMatch) {
+                    return res.status(200).json({
+                        eligible: true,
+                        reason: `Congratulations! You meet the entry requirements for ${courseName} (${reqPasses} passes in ${reqStream} stream).`,
+                        message: `Congratulations! You meet the entry requirements for ${courseName}.`,
+                        courseFee: fee,
+                        courseDetails: {
+                            fees: fee,
+                            duration: course.duration || '3 Years',
+                            code: course.code
+                        }
+                    });
+                } else {
+                    let reason = 'Requirements not met. ';
+                    if (!passesMatch) reason += `Requires at least ${reqPasses} passes (you have ${numPasses}). `;
+                    if (!streamMatch) reason += `Requires ${reqStream} stream (you selected ${stream}).`;
+
+                    return res.status(200).json({
+                        eligible: false,
+                        reason: reason.trim(),
+                        message: reason.trim(),
+                        courseFee: fee,
+                        courseDetails: {
+                            fees: fee,
+                            duration: course.duration || '3 Years',
+                            code: course.code
+                        }
+                    });
+                }
+            }
+
+            // Scenario B: edLevel, results, age check
             const studentGPA = parseFloat(results);
             const studentAge = parseInt(age);
             
@@ -147,13 +219,13 @@ const courseController = {
             let failureReason = '';
 
             // Check Age
-            if (studentAge < course.minAge) {
+            if (studentAge && studentAge < course.minAge) {
                 isEligible = false;
                 failureReason = `Minimum age required is ${course.minAge}.`;
             }
 
             // Check Education Level
-            if (studentLevelWeight < requiredLevelWeight) {
+            if (edLevel && studentLevelWeight < requiredLevelWeight) {
                 isEligible = false;
                 failureReason = `Minimum education level required is ${course.requiredEducationLevel}.`;
             }
@@ -164,25 +236,21 @@ const courseController = {
                 failureReason = `Minimum GPA/Result score required is ${course.minGPA}.`;
             }
 
-            if (isEligible) {
-                res.status(200).json({
-                    eligible: true,
-                    message: `You meet all the entry requirements for ${course.title}!`,
-                    courseDetails: {
-                        fees: course.fees || course.price,
-                        duration: course.duration,
-                        code: course.code
-                    }
-                });
-            } else {
-                res.status(200).json({
-                    eligible: false,
-                    message: `Based on your profile, you do not meet the minimum requirements. ${failureReason}`,
-                    courseDetails: {
-                        fees: course.fees || course.price
-                    }
-                });
-            }
+            const finalMsg = isEligible
+                ? `You meet all the entry requirements for ${courseName}!`
+                : `Based on your profile, you do not meet the minimum requirements. ${failureReason}`;
+
+            res.status(200).json({
+                eligible: isEligible,
+                reason: finalMsg,
+                message: finalMsg,
+                courseFee: fee,
+                courseDetails: {
+                    fees: fee,
+                    duration: course.duration || '3 Years',
+                    code: course.code
+                }
+            });
         } catch (error) {
             console.error('Eligibility Error:', error);
             res.status(500).json({ error: 'Server error while checking eligibility' });

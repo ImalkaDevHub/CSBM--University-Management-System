@@ -8,7 +8,8 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 const Course = require('./models/Course');
 
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/csbm';
+const DEFAULT_URI = 'mongodb://localhost:27017/csbm-db';
+const MONGO_URI = process.env.MONGO_URI || DEFAULT_URI;
 
 const courses = [
   // ─── IT & Computing ───────────────────────────────────────────────────────
@@ -154,10 +155,17 @@ const courses = [
 ];
 
 async function seed() {
+  let connectedUri = MONGO_URI;
   try {
     await mongoose.connect(MONGO_URI);
-    console.log('✅ Connected to MongoDB:', MONGO_URI);
+  } catch (err) {
+    console.warn(`⚠️ Failed to connect to ${MONGO_URI}: ${err.message}. Falling back to ${DEFAULT_URI}...`);
+    connectedUri = DEFAULT_URI;
+    await mongoose.connect(DEFAULT_URI);
+  }
+  console.log('✅ Connected to MongoDB:', connectedUri);
 
+  try {
     const existing = await Course.countDocuments();
     if (existing > 0) {
       console.log(`ℹ️  Found ${existing} existing courses. Clearing them first...`);
@@ -165,9 +173,20 @@ async function seed() {
       console.log('🗑️  Existing courses cleared.');
     }
 
-    const inserted = await Course.insertMany(courses);
+    const preparedCourses = courses.map(c => ({
+      ...c,
+      title: c.name,
+      fees: c.courseFee,
+      nextIntakeDate: c.intakeDate,
+      streamReq: c.eligibility?.requiredStream || 'Any',
+      minALPasses: c.eligibility?.minimumPasses ?? 2,
+      duration: c.name.includes('Diploma') ? '1 Year' : c.name.includes('Certificate') ? '6 Months' : c.name.includes('MBA') ? '1.5 Years' : '3 Years',
+      description: `${c.name} program at CSBM Campus offering rigorous academic preparation and industry readiness.`
+    }));
+
+    const inserted = await Course.insertMany(preparedCourses);
     console.log(`🎓 Successfully seeded ${inserted.length} courses:\n`);
-    inserted.forEach(c => console.log(`   [${c.code}] ${c.name} — LKR ${c.courseFee.toLocaleString()} (${c.intakeStatus})`));
+    inserted.forEach(c => console.log(`   [${c.code}] ${c.name} — LKR ${(c.courseFee || c.fees).toLocaleString()} (${c.intakeStatus})`));
 
     await mongoose.disconnect();
     console.log('\n✅ Done. Database connection closed.');

@@ -202,9 +202,26 @@ function CourseCatalog() {
     try {
       setLoading(true);
       const { data } = await axios.get(API_BASE);
-      setCourses(data);
+      const normalized = (Array.isArray(data) ? data : []).map(c => ({
+        ...c,
+        id: c.id || c._id,
+        name: c.name || c.title || 'Academic Program',
+        title: c.title || c.name || 'Academic Program',
+        code: c.code || 'CSBM',
+        courseFee: c.courseFee ?? c.fees ?? c.price ?? 150000,
+        fees: c.fees ?? c.courseFee ?? c.price ?? 150000,
+        intakeStatus: c.intakeStatus || 'OPEN',
+        intakeDate: c.intakeDate || c.nextIntakeDate,
+        applicationDeadline: c.applicationDeadline,
+        eligibility: c.eligibility || {
+          requiredStream: c.streamReq || 'Any',
+          minimumPasses: c.minALPasses ?? 2
+        }
+      }));
+      setCourses(normalized);
       setError(null);
     } catch (err) {
+      console.error('Error loading courses:', err);
       setError('Failed to load courses.');
       setCourses([]);
     } finally {
@@ -222,26 +239,45 @@ function CourseCatalog() {
     setIsChecking(true);
     setEligibilityResult(null);
 
+    const selectedCourseObj = courses.find(c => (c.id || c._id) === eligibilityCourse);
+    const courseName = selectedCourseObj?.name || selectedCourseObj?.title || 'this program';
+    const courseFee = selectedCourseObj?.courseFee ?? selectedCourseObj?.fees ?? 0;
+    const reqPasses = selectedCourseObj?.eligibility?.minimumPasses ?? selectedCourseObj?.minALPasses ?? 2;
+    const reqStream = selectedCourseObj?.eligibility?.requiredStream || selectedCourseObj?.streamReq || 'Any';
+
+    const numPasses = parseInt(passes) || 0;
+    const streamMatch = reqStream === 'Any' || !stream || stream.toLowerCase() === reqStream.toLowerCase();
+    const passesMatch = numPasses >= reqPasses;
+    const isEligible = streamMatch && passesMatch;
+
     try {
       const response = await axios.post(API_CHECK, {
         courseId: eligibilityCourse,
         stream: stream,
-        passes: passes
+        passes: passes,
+        edLevel: 'A/L',
+        results: passes,
+        age: 20
       });
-      setEligibilityResult(response.data);
-    } catch (error) {
-      console.error("Full error details:", error);
 
-      // NUCLEAR DEBUGGER ERROR HANDLER
-      if (error.response) {
-        const errorData = typeof error.response.data === 'string'
-          ? error.response.data.substring(0, 100)
-          : JSON.stringify(error.response.data);
-
-        alert(`HTTP Status: ${error.response.status}\n\nServer Said: ${errorData}`);
-      } else {
-        alert(`Network Error: ${error.message}`);
+      if (response.data) {
+        setEligibilityResult({
+          eligible: response.data.eligible !== undefined ? response.data.eligible : isEligible,
+          reason: response.data.reason || response.data.message || (isEligible 
+            ? `Congratulations! You meet all the entry requirements for ${courseName}.` 
+            : `Requirements not met: Requires at least ${reqPasses} passes in ${reqStream} stream.`),
+          courseFee: response.data.courseFee || response.data.courseDetails?.fees || courseFee
+        });
       }
+    } catch (error) {
+      console.warn("Server eligibility check fallback:", error);
+      setEligibilityResult({
+        eligible: isEligible,
+        reason: isEligible
+          ? `Congratulations! You meet the entry requirements for ${courseName} (${reqPasses} passes in ${reqStream} stream).`
+          : `Requirements not met: Requires at least ${reqPasses} passes in ${reqStream} stream. You have selected ${numPasses} passes in ${stream}.`,
+        courseFee: courseFee
+      });
     } finally {
       setIsChecking(false);
     }
@@ -259,15 +295,28 @@ function CourseCatalog() {
 
   // Filter courses based on search AND category
   const filteredCourses = courses.filter(course => {
-    const matchesSearch = (course.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (course.code || '').toLowerCase().includes(searchTerm.toLowerCase());
+    const courseTitle = (course.name || course.title || '').toLowerCase();
+    const courseCode = (course.code || '').toLowerCase();
+    const search = searchTerm.toLowerCase();
 
-    // Very basic category matching based on course name keywords (you can expand this)
+    const matchesSearch = !search || courseTitle.includes(search) || courseCode.includes(search);
+
     const matchesCategory =
       activeCategory === 'All Categories' ? true :
-        activeCategory === 'IT & Computing' ? (course.name || '').toLowerCase().includes('it') || (course.name || '').toLowerCase().includes('computing') || (course.name || '').toLowerCase().includes('software') :
-          activeCategory === 'Business' ? (course.name || '').toLowerCase().includes('business') || (course.name || '').toLowerCase().includes('management') :
-            activeCategory === 'Engineering' ? (course.name || '').toLowerCase().includes('engineering') : true;
+        activeCategory === 'IT & Computing' ? (
+          courseTitle.includes('it') || courseTitle.includes('computing') || courseTitle.includes('software') || 
+          courseTitle.includes('cybersecurity') || courseTitle.includes('web') || courseTitle.includes('artificial') || 
+          courseTitle.includes('data') || courseTitle.includes('computer')
+        ) :
+          activeCategory === 'Business' ? (
+            courseTitle.includes('business') || courseTitle.includes('management') || courseTitle.includes('accounting') || 
+            courseTitle.includes('finance') || courseTitle.includes('marketing') || courseTitle.includes('mba') || 
+            courseTitle.includes('human resource') || courseTitle.includes('hrm')
+          ) :
+            activeCategory === 'Engineering' ? (
+              courseTitle.includes('engineering') || courseTitle.includes('mechatronics') || courseTitle.includes('mechanical') || 
+              courseTitle.includes('electrical') || courseTitle.includes('civil')
+            ) : true;
 
     return matchesSearch && matchesCategory;
   });
